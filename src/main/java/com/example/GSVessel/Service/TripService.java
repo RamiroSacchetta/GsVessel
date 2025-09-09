@@ -26,7 +26,9 @@ public class TripService {
 
     // Obtener todos los viajes
     public List<TripDTO> getAllTrips() {
-        return tripRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+        return tripRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     // Obtener viaje por ID
@@ -55,6 +57,15 @@ public class TripService {
             existing.setShacklesExpense(tripDTO.getShacklesExpense());
             existing.setCablesExpense(tripDTO.getCablesExpense());
             existing.setOtherExpenses(tripDTO.getOtherExpenses());
+
+            // Campos de combustible, aceite y filtros
+            existing.setCombustible(tripDTO.getCombustible());
+            existing.setAceite(tripDTO.getAceite());
+            existing.setFiltros(tripDTO.getFiltros());
+            existing.setCombustibleUsed(tripDTO.getCombustibleUsed());
+            existing.setAceiteUsed(tripDTO.getAceiteUsed());
+            existing.setFiltrosUsed(tripDTO.getFiltrosUsed());
+
             existing.setShacklesUsed(tripDTO.getShacklesUsed());
             existing.setCargoUsed(tripDTO.getCargoUsed());
             existing.setShip(shipOpt.get());
@@ -68,7 +79,7 @@ public class TripService {
         tripRepository.deleteById(id);
     }
 
-    // Helpers
+    // Helpers: convertir entidad a DTO
     private TripDTO toDTO(Trip trip) {
         return TripDTO.builder()
                 .id(trip.getId())
@@ -78,12 +89,19 @@ public class TripService {
                 .shacklesExpense(trip.getShacklesExpense())
                 .cablesExpense(trip.getCablesExpense())
                 .otherExpenses(trip.getOtherExpenses())
+                .combustible(trip.getCombustible())
+                .aceite(trip.getAceite())
+                .filtros(trip.getFiltros())
+                .combustibleUsed(trip.getCombustibleUsed())
+                .aceiteUsed(trip.getAceiteUsed())
+                .filtrosUsed(trip.getFiltrosUsed())
                 .shacklesUsed(trip.getShacklesUsed())
                 .cargoUsed(trip.getCargoUsed())
                 .shipId(trip.getShip().getId())
                 .build();
     }
 
+    // Helpers: convertir DTO a entidad
     private Trip toEntity(TripDTO dto, Ship ship) {
         return Trip.builder()
                 .id(dto.getId())
@@ -93,6 +111,12 @@ public class TripService {
                 .shacklesExpense(dto.getShacklesExpense())
                 .cablesExpense(dto.getCablesExpense())
                 .otherExpenses(dto.getOtherExpenses())
+                .combustible(dto.getCombustible())
+                .aceite(dto.getAceite())
+                .filtros(dto.getFiltros())
+                .combustibleUsed(dto.getCombustibleUsed())
+                .aceiteUsed(dto.getAceiteUsed())
+                .filtrosUsed(dto.getFiltrosUsed())
                 .shacklesUsed(dto.getShacklesUsed())
                 .cargoUsed(dto.getCargoUsed())
                 .ship(ship)

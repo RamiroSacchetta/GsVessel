@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/trips")
+@RequestMapping("/api/trips")
 public class TripController {
 
     private final TripService tripService;
@@ -24,39 +24,31 @@ public class TripController {
     @GetMapping
     public ResponseEntity<List<TripDTO>> getAllTrips() {
         List<TripDTO> trips = tripService.getAllTrips();
-        if (trips.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
         return ResponseEntity.ok(trips);
     }
 
     // Obtener viaje por ID
     @GetMapping("/{id}")
     public ResponseEntity<TripDTO> getTripById(@PathVariable Long id) {
-        Optional<TripDTO> trip = tripService.getTripById(id);
-        return trip.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<TripDTO> tripOpt = tripService.getTripById(id);
+        return tripOpt.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Crear viaje
     @PostMapping
-    public ResponseEntity<?> createTrip(@RequestBody TripDTO tripDTO) {
-        Optional<TripDTO> createdTrip = tripService.createTrip(tripDTO);
-        if (createdTrip.isEmpty()) {
-            return ResponseEntity.badRequest().body("El barco no existe");
-        }
-        return ResponseEntity.ok(createdTrip.get());
+    public ResponseEntity<TripDTO> createTrip(@RequestBody TripDTO tripDTO) {
+        Optional<TripDTO> created = tripService.createTrip(tripDTO);
+        return created.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
     // Actualizar viaje
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateTrip(@PathVariable Long id, @RequestBody TripDTO tripDTO) {
-        Optional<TripDTO> updatedTrip = tripService.updateTrip(id, tripDTO);
-        if (updatedTrip == null) {
-            return ResponseEntity.badRequest().body("El barco no existe");
-        }
-        return updatedTrip.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<TripDTO> updateTrip(@PathVariable Long id, @RequestBody TripDTO tripDTO) {
+        Optional<TripDTO> updated = tripService.updateTrip(id, tripDTO);
+        return updated.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Eliminar viaje

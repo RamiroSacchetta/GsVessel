@@ -21,14 +21,19 @@ public class Trip {
     private Double foodExpense;        // Gasto en comida
     private Double shacklesExpense;    // Gasto en grilletes
     private Double cablesExpense;      // Gasto en cables
+    private Double combustible;        // Gasto en combustible
+    private Double aceite;             // Gasto en aceite
+    private Double filtros;            // Gasto en filtros
     private Double otherExpenses;      // Otros gastos
 
     private int shacklesUsed;          // Grilletes usados
     private int cargoUsed;             // Carga usada
+    private int combustibleUsed;       // Litros de combustible usados
+    private int filtrosUsed;           // Filtros usados
+    private int aceiteUsed;            // Litros de aceite usados
 
     // Relación con el barco
     @ManyToOne
     @JoinColumn(name = "ship_id", nullable = false)
     private Ship ship;
 }
-
