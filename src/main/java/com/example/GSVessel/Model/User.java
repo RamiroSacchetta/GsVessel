@@ -43,4 +43,8 @@ public class User {
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Barco> barcos;
+
+    @Column(nullable = false)
+    private boolean enabled = false;
+
 }
