@@ -19,6 +19,8 @@ public class MaintenanceService {
 
 
 
+
+
     public MaintenanceDTO create(MaintenanceDTO dto) {
         if (dto.getFecha() == null) {
             throw new IllegalArgumentException("La fecha es obligatoria");
@@ -85,4 +87,5 @@ public class MaintenanceService {
         }
         maintenanceRepository.deleteById(id);
     }
+
 }

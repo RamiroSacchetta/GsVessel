@@ -1,5 +1,7 @@
 package com.example.GSVessel.Controller;
 
+import com.example.GSVessel.DTO.MaintenanceDTO;
+import com.example.GSVessel.Mapper.MaintenanceMapper;
 import com.example.GSVessel.Model.Enums.TipoMaintenance;
 import com.example.GSVessel.Model.Maintenance;
 import com.example.GSVessel.Service.MaintenanceService;
@@ -12,42 +14,44 @@ import java.util.List;
 @RequestMapping("/api/maintenance")
 public class MaintenanceController {
 
+    @Autowired
+    private MaintenanceService maintenanceService;
 
+    // Crear mantenimiento
+    @PostMapping
+    public ResponseEntity<MaintenanceDTO> create(@RequestBody MaintenanceDTO maintenanceDTO) {
+        MaintenanceDTO saved = maintenanceService.create(maintenanceDTO);
+        return ResponseEntity.status(201).body(saved);
+    }
 
+    // Listar todos los mantenimientos
+    @GetMapping
+    public ResponseEntity<List<MaintenanceDTO>> getAll() {
+        return ResponseEntity.ok(maintenanceService.findAll());
+    }
 
-        @Autowired
-        private MaintenanceService maintenanceService;
+    // Obtener mantenimiento por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<MaintenanceDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(maintenanceService.findById(id));
+    }
 
+    // Obtener mantenimientos por tipo
+    @GetMapping("/tipo/{tipo}")
+    public ResponseEntity<List<MaintenanceDTO>> getByTipo(@PathVariable TipoMaintenance tipo) {
+        return ResponseEntity.ok(maintenanceService.findByTipo(tipo));
+    }
 
-        @PostMapping
-        public ResponseEntity<Maintenance> create(@RequestBody Maintenance maintenance) {
-            return ResponseEntity.ok(maintenanceService.create(maintenance));
-        }
+    // Actualizar mantenimiento
+    @PutMapping("/{id}")
+    public ResponseEntity<MaintenanceDTO> update(@PathVariable Long id, @RequestBody MaintenanceDTO dto) {
+        return ResponseEntity.ok(maintenanceService.update(id, dto));
+    }
 
-        @GetMapping
-        public ResponseEntity<List<Maintenance>> getAll() {
-            return ResponseEntity.ok(maintenanceService.findAll());
-        }
-
-        @GetMapping("/{id}")
-        public ResponseEntity<Maintenance> getById(@PathVariable Long id) {
-            return ResponseEntity.ok(maintenanceService.findById(id));
-        }
-
-        @GetMapping("/tipo/{tipo}")
-        public ResponseEntity<List<Maintenance>> getByTipo(@PathVariable TipoMaintenance tipo) {
-            return ResponseEntity.ok(maintenanceService.findByTipo(tipo));
-        }
-
-        @PutMapping("/{id}")
-        public ResponseEntity<Maintenance> update(@PathVariable Long id, @RequestBody Maintenance maintenance) {
-            return ResponseEntity.ok(maintenanceService.update(id, maintenance));
-        }
-
-        @DeleteMapping("/{id}")
-        public ResponseEntity<Void> delete(@PathVariable Long id) {
-            maintenanceService.delete(id);
-            return ResponseEntity.noContent().build();
-        }
-
+    // Eliminar mantenimiento
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        maintenanceService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
