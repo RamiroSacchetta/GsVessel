@@ -1,13 +1,17 @@
 package com.example.GSVessel.Controller;
 
+import com.example.GSVessel.Exception.UserAlreadyExistsException;
+import com.example.GSVessel.Exception.UserNotFoundException;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Model.DTO.UserDTO;
-import com.example.GSVessel.Model.Enums.Role;
 import com.example.GSVessel.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,13 +31,12 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.getAllUsers()
                 .stream()
-                .map(u -> new UserDTO(u.getId(), u.getUsername(), u.getEmail(), Role.valueOf(String.valueOf(u.getRole()))))
+                .map(u -> new UserDTO(u.getId(), u.getUsername(), u.getEmail(), u.getRole()))
                 .collect(Collectors.toList());
 
         if (users.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-
         return ResponseEntity.ok(users);
     }
 
@@ -41,25 +44,25 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         User u = userService.getUserById(id);
-        UserDTO dto = new UserDTO(u.getId(), u.getUsername(), u.getEmail(), Role.valueOf(String.valueOf(u.getRole())));
+        UserDTO dto = new UserDTO(u.getId(), u.getUsername(), u.getEmail(), u.getRole());
         return ResponseEntity.ok(dto);
     }
 
-    // Crear nuevo usuario
+    // Crear usuario
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody User user) {
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody User user) {
         User createdUser = userService.createUser(user);
-        UserDTO dto = new UserDTO(createdUser.getId(), createdUser.getUsername(), createdUser.getEmail(),
-                Role.valueOf(String.valueOf(createdUser.getRole())));
-        return ResponseEntity.ok(dto);
+        UserDTO dto = new UserDTO(createdUser.getId(), createdUser.getUsername(),
+                createdUser.getEmail(), createdUser.getRole());
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     // Actualizar usuario
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
         User updatedUser = userService.updateUser(id, user);
-        UserDTO dto = new UserDTO(updatedUser.getId(), updatedUser.getUsername(), updatedUser.getEmail(),
-                Role.valueOf(String.valueOf(updatedUser.getRole())));
+        UserDTO dto = new UserDTO(updatedUser.getId(), updatedUser.getUsername(),
+                updatedUser.getEmail(), updatedUser.getRole());
         return ResponseEntity.ok(dto);
     }
 
@@ -68,5 +71,27 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Manejo de excepciones personalizadas
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<String> handleAlreadyExists(UserAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    // Manejo de errores de validación
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 }

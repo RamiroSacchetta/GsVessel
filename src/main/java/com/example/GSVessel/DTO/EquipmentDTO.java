@@ -4,6 +4,7 @@ import com.example.GSVessel.Model.Enums.EquipmentCategory;
 import com.example.GSVessel.Model.Enums.EquipmentLocation;
 
 public class EquipmentDTO {
+
     private Long id;
     private String name;
     private EquipmentCategory category;
@@ -13,9 +14,8 @@ public class EquipmentDTO {
     private Double budget;
     private String description;
     private String imageUrl;
-    private Long shipId; // Referencia al barco
+    private Long shipId;
 
-    // Constructores
     public EquipmentDTO() {}
 
     public EquipmentDTO(Long id, String name, EquipmentCategory category, EquipmentLocation location,

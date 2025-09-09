@@ -1,23 +1,24 @@
 package com.example.GSVessel.Service;
 
+import com.example.GSVessel.Exception.UserAlreadyExistsException;
+import com.example.GSVessel.Exception.UserNotFoundException;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Model.Enums.Role;
 import com.example.GSVessel.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -28,24 +29,22 @@ public class UserService {
 
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public User createUser(User user) {
         if (existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username ya existe");
+            throw new UserAlreadyExistsException("username", user.getUsername());
         }
         if (existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email ya existe");
+            throw new UserAlreadyExistsException("email", user.getEmail());
         }
 
         if (user.getRole() == null) {
-            user.setRole(Role.valueOf(Role.USER.name()));
+            user.setRole(Role.USER);
         }
 
-        // Encriptar contraseña
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         return userRepository.save(user);
     }
 
@@ -77,9 +76,5 @@ public class UserService {
 
     public boolean existsByEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
-    }
-
-    public boolean existsById(Long id) {
-        return userRepository.existsById(id);
     }
 }

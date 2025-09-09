@@ -1,4 +1,4 @@
-package com.example.GSVessel.Model.Equipment;
+package com.example.GSVessel.Model;
 import com.example.GSVessel.Model.Enums.EquipmentCategory;
 
 import com.example.GSVessel.Model.Enums.EquipmentLocation;

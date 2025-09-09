@@ -1,11 +1,11 @@
-package com.example.GSVessel.Service.;
+package com.example.GSVessel.Service;
 
 import com.example.GSVessel.DTO.EquipmentDTO;
 import com.example.GSVessel.Model.Equipment;
 import com.example.GSVessel.Model.Ship;
+import com.example.GSVessel.Model.Enums.EquipmentCategory;
 import com.example.GSVessel.Repository.EquipmentRepository;
 import com.example.GSVessel.Repository.ShipRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,89 +15,16 @@ import java.util.stream.Collectors;
 @Service
 public class EquipmentService {
 
-    @Autowired
-    private EquipmentRepository equipmentRepository;
+    private final EquipmentRepository equipmentRepository;
+    private final ShipRepository shipRepository;
 
-    @Autowired
-    private ShipRepository shipRepository;
-
-    // Crear un nuevo equipment
-    public EquipmentDTO createEquipment(EquipmentDTO dto) {
-        Equipment equipment = mapDtoToEntity(dto);
-
-        if (dto.getShipId() != null) {
-            Ship ship = shipRepository.findById(dto.getShipId())
-                    .orElseThrow(() -> new RuntimeException("Ship no encontrado con ID: " + dto.getShipId()));
-            equipment.setShip(ship);
-        }
-
-        Equipment saved = equipmentRepository.save(equipment);
-        return mapEntityToDto(saved);
+    public EquipmentService(EquipmentRepository equipmentRepository, ShipRepository shipRepository) {
+        this.equipmentRepository = equipmentRepository;
+        this.shipRepository = shipRepository;
     }
 
-    // Listar todos los equipment
-    public List<EquipmentDTO> getAllEquipment() {
-        return equipmentRepository.findAll()
-                .stream()
-                .map(this::mapEntityToDto)
-                .collect(Collectors.toList());
-    }
-
-    // Obtener equipment por ID
-    public EquipmentDTO getEquipmentById(Long id) {
-        Equipment equipment = equipmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Equipment no encontrado con ID: " + id));
-        return mapEntityToDto(equipment);
-    }
-
-    // Actualizar equipment
-    public EquipmentDTO updateEquipment(Long id, EquipmentDTO dto) {
-        Equipment existing = equipmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Equipment no encontrado con ID: " + id));
-
-        existing.setName(dto.getName());
-        existing.setCategory(dto.getCategory());
-        existing.setLocation(dto.getLocation());
-        existing.setConsumption(dto.getConsumption());
-        existing.setHoursUsed(dto.getHoursUsed());
-        existing.setBudget(dto.getBudget());
-        existing.setDescription(dto.getDescription());
-        existing.setImageUrl(dto.getImageUrl());
-
-        if (dto.getShipId() != null) {
-            Ship ship = shipRepository.findById(dto.getShipId())
-                    .orElseThrow(() -> new RuntimeException("Ship no encontrado con ID: " + dto.getShipId()));
-            existing.setShip(ship);
-        } else {
-            existing.setShip(null);
-        }
-
-        Equipment updated = equipmentRepository.save(existing);
-        return mapEntityToDto(updated);
-    }
-
-    // Eliminar equipment
-    public void deleteEquipment(Long id) {
-        Equipment existing = equipmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Equipment no encontrado con ID: " + id));
-        equipmentRepository.delete(existing);
-    }
-
-    // --- Métodos privados de mapeo DTO <-> Entity ---
-    private Equipment mapDtoToEntity(EquipmentDTO dto) {
-        Equipment equipment = new Equipment();
-        equipment.setName(dto.getName());
-        equipment.setCategory(dto.getCategory());
-        equipment.setLocation(dto.getLocation());
-        equipment.setConsumption(dto.getConsumption());
-        equipment.setHoursUsed(dto.getHoursUsed());
-        equipment.setBudget(dto.getBudget());
-        equipment.setDescription(dto.getDescription());
-        equipment.setImageUrl(dto.getImageUrl());
-        return equipment;
-    }
-
-    private EquipmentDTO mapEntityToDto(Equipment equipment) {
+    // Convertir a DTO
+    public EquipmentDTO convertToDTO(Equipment equipment) {
         Long shipId = equipment.getShip() != null ? equipment.getShip().getId() : null;
         return new EquipmentDTO(
                 equipment.getId(),
@@ -111,5 +38,74 @@ public class EquipmentService {
                 equipment.getImageUrl(),
                 shipId
         );
+    }
+
+    // Listar todos los equipos
+    public List<EquipmentDTO> getAllEquipment() {
+        List<Equipment> equipments = equipmentRepository.findAll();
+        return equipments.stream()
+                .map(e -> convertToDTO(e))
+                .collect(Collectors.toList());
+    }
+
+    // Guardar nuevo equipo
+    public Equipment saveEquipment(Equipment equipment) {
+        return equipmentRepository.save(equipment);
+    }
+
+    // Obtener equipo por ID
+    public Optional<Equipment> getEquipmentById(Long id) {
+        return equipmentRepository.findById(id);
+    }
+
+    // Actualizar equipo
+    public Equipment updateEquipment(Equipment equipment) {
+        return equipmentRepository.save(equipment);
+    }
+
+    // Actualizar a partir de DTO
+    public EquipmentDTO updateEquipment(Long id, EquipmentDTO equipmentDTO) {
+        Optional<Equipment> optional = equipmentRepository.findById(id);
+        if (!optional.isPresent()) return null;
+
+        Equipment equipment = optional.get();
+        equipment.setName(equipmentDTO.getName());
+        equipment.setCategory(equipmentDTO.getCategory());
+        equipment.setLocation(equipmentDTO.getLocation());
+        equipment.setConsumption(equipmentDTO.getConsumption());
+        equipment.setHoursUsed(equipmentDTO.getHoursUsed());
+        equipment.setBudget(equipmentDTO.getBudget());
+        equipment.setDescription(equipmentDTO.getDescription());
+        equipment.setImageUrl(equipmentDTO.getImageUrl());
+
+        if (equipmentDTO.getShipId() != null) {
+            Optional<Ship> ship = shipRepository.findById(equipmentDTO.getShipId());
+            ship.ifPresent(equipment::setShip);
+        }
+
+        Equipment updated = equipmentRepository.save(equipment);
+        return convertToDTO(updated);
+    }
+
+    // Eliminar equipo
+    public boolean deleteEquipment(Long id) {
+        Optional<Equipment> optional = equipmentRepository.findById(id);
+        if (optional.isPresent()) {
+            equipmentRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    // Filtrar por barco
+    public List<EquipmentDTO> getEquipmentByShip(Long shipId) {
+        List<Equipment> equipments = equipmentRepository.findByShipId(shipId);
+        return equipments.stream().map(e -> convertToDTO(e)).collect(Collectors.toList());
+    }
+
+    // Filtrar por categoría
+    public List<EquipmentDTO> getEquipmentByCategory(EquipmentCategory category) {
+        List<Equipment> equipments = equipmentRepository.findByCategory(category);
+        return equipments.stream().map(e -> convertToDTO(e)).collect(Collectors.toList());
     }
 }
