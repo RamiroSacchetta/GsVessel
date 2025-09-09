@@ -3,6 +3,9 @@ import com.example.GSVessel.Model.Enums.EquipmentCategory;
 
 import com.example.GSVessel.Model.Enums.EquipmentLocation;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -39,6 +42,9 @@ public class Equipment {
     @ManyToOne
     @JoinColumn(name = "ship_id")
     private Ship ship;
+
+    @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Maintenance> mantenimientos = new ArrayList<>();
 
     // Constructores
     public Equipment() {}
