@@ -1,0 +1,62 @@
+package com.example.GSVessel.Service;
+
+import com.example.GSVessel.DTO.WarehouseDTO;
+import com.example.GSVessel.Model.Warehouse;
+import com.example.GSVessel.Repository.WarehouseRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class WarehouseService {
+
+    private final WarehouseRepository warehouseRepository;
+
+    public WarehouseDTO create(WarehouseDTO dto) {
+        Warehouse warehouse = Warehouse.builder()
+                .name(dto.getName())
+                .location(dto.getLocation())
+                .build();
+        return toDTO(warehouseRepository.save(warehouse));
+    }
+
+    public WarehouseDTO update(Long id, WarehouseDTO dto) {
+        Warehouse warehouse = warehouseRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Depósito no encontrado con ID: " + id));
+
+        warehouse.setName(dto.getName());
+        warehouse.setLocation(dto.getLocation());
+
+        return toDTO(warehouseRepository.save(warehouse));
+    }
+
+    public void delete(Long id) {
+        Warehouse warehouse = warehouseRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Depósito no encontrado con ID: " + id));
+        warehouseRepository.delete(warehouse);
+    }
+
+    public WarehouseDTO getById(Long id) {
+        return warehouseRepository.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Depósito no encontrado con ID: " + id));
+    }
+
+    public List<WarehouseDTO> getAll() {
+        return warehouseRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    private WarehouseDTO toDTO(Warehouse warehouse) {
+        return WarehouseDTO.builder()
+                .id(warehouse.getId())
+                .name(warehouse.getName())
+                .location(warehouse.getLocation())
+                .build();
+    }
+}
