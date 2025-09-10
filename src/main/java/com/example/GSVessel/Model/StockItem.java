@@ -25,4 +25,5 @@ public class StockItem {
     @ManyToOne
     @JoinColumn(name = "warehouse_id", nullable = false)
     private Warehouse warehouse;
+
 }
