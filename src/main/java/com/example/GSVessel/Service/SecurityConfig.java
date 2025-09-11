@@ -38,13 +38,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable() // Deshabilitamos CSRF para API REST
+                .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/users/register").permitAll() // ruta de registro abierta
-                .requestMatchers("/admin/**").hasRole("ADMIN") // rutas de admin
-                .anyRequest().authenticated() // el resto requiere login
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/confirm").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
                 .and()
-                .httpBasic(); // autenticación básica (puede cambiarse a JWT después)
+                .httpBasic(); // después lo reemplazás por JWT
         return http.build();
     }
 }

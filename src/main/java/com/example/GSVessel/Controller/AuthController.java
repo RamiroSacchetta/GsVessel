@@ -1,5 +1,6 @@
 package com.example.GSVessel.Controller;
 
+import com.example.GSVessel.DTO.UserLoginDTO;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Service.UserService;
 import com.example.GSVessel.Security.JwtUtil;
@@ -44,14 +45,12 @@ public class AuthController {
 
     // Login con JWT
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String username,
-                                        @RequestParam String password) {
+    public ResponseEntity<String> login(@RequestBody UserLoginDTO request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
 
-            // Generar token JWT
             String jwt = jwtUtil.generateToken(authentication.getName());
             return ResponseEntity.ok(jwt);
 

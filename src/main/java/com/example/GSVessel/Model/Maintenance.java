@@ -30,7 +30,7 @@ public class Maintenance {
     private String descripcion;
 
     @NotNull(message = "Es obligatorio ingresar el tipo de mantenimiento")
-    @Enumerated(EnumType.STRING) // <- importante para guardar el enum
+    @Enumerated(EnumType.STRING)
     private TipoMaintenance tipoMaintenance;
 
     // Relación con Equipment

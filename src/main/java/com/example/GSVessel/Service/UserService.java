@@ -58,6 +58,7 @@ public class UserService {
         if (user.getRole() == null) {
             user.setRole(Role.USER);
         }
+        user.setEnabled(false);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
@@ -67,9 +68,12 @@ public class UserService {
         if (existsByUsername(user.getUsername())) {
             throw new UserAlreadyExistsException("username", user.getUsername());
         }
+
+
         if (existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("email", user.getEmail());
         }
+
 
         if (user.getRole() == null) {
             user.setRole(Role.USER);
@@ -87,10 +91,10 @@ public class UserService {
                 .expiryDate(LocalDateTime.now().plusHours(24)) // 24 horas
                 .build();
         tokenRepository.save(verificationToken);
-
+ /*
         // Enviar email
         sendConfirmationEmail(savedUser.getEmail(), token);
-
+*/
         return savedUser;
     }
 
