@@ -1,60 +1,49 @@
 package com.example.GSVessel.Controller;
 
-import com.example.GSVessel.DTO.TripDTO;
+import com.example.GSVessel.Model.Trip;
 import com.example.GSVessel.Service.TripService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/trips")
+@RequiredArgsConstructor
 public class TripController {
 
     private final TripService tripService;
 
-    @Autowired
-    public TripController(TripService tripService) {
-        this.tripService = tripService;
-    }
-
-    // Obtener todos los viajes
     @GetMapping
-    public ResponseEntity<List<TripDTO>> getAllTrips() {
-        List<TripDTO> trips = tripService.getAllTrips();
-        return ResponseEntity.ok(trips);
+    public List<Trip> getAll() {
+        return tripService.findAll();
     }
 
-    // Obtener viaje por ID
     @GetMapping("/{id}")
-    public ResponseEntity<TripDTO> getTripById(@PathVariable Long id) {
-        Optional<TripDTO> tripOpt = tripService.getTripById(id);
-        return tripOpt.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public Trip getById(@PathVariable Long id) {
+        return tripService.findById(id);
     }
 
-    // Crear viaje
     @PostMapping
-    public ResponseEntity<TripDTO> createTrip(@RequestBody TripDTO tripDTO) {
-        Optional<TripDTO> created = tripService.createTrip(tripDTO);
-        return created.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.badRequest().build());
+    public ResponseEntity<Map<String, Object>> create(@RequestBody Trip trip) {
+        Map<String, Object> response = tripService.createTrip(trip);
+        return ResponseEntity.ok(response);
     }
 
-    // Actualizar viaje
-    @PutMapping("/{id}")
-    public ResponseEntity<TripDTO> updateTrip(@PathVariable Long id, @RequestBody TripDTO tripDTO) {
-        Optional<TripDTO> updated = tripService.updateTrip(id, tripDTO);
-        return updated.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // Eliminar viaje
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTrip(@PathVariable Long id) {
-        tripService.deleteTrip(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        tripService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/returnDate")
+    public ResponseEntity<Trip> updateReturnDate(@PathVariable Long id,
+                                                 @RequestBody Map<String, String> body) {
+        LocalDate returnDate = LocalDate.parse(body.get("returnDate"));
+        Trip updatedTrip = tripService.updateReturnDate(id, returnDate);
+        return ResponseEntity.ok(updatedTrip);
     }
 }

@@ -1,125 +1,82 @@
 package com.example.GSVessel.Service;
 
-import com.example.GSVessel.DTO.TripDTO;
+import com.example.GSVessel.Model.StockItem;
 import com.example.GSVessel.Model.Trip;
-import com.example.GSVessel.Model.Ship;
+import com.example.GSVessel.Model.TripStockItem;
+import com.example.GSVessel.Repository.StockItemRepository;
 import com.example.GSVessel.Repository.TripRepository;
-import com.example.GSVessel.Repository.ShipRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class TripService {
 
     private final TripRepository tripRepository;
-    private final ShipRepository shipRepository;
+    private final StockItemRepository stockItemRepository;
 
-    @Autowired
-    public TripService(TripRepository tripRepository, ShipRepository shipRepository) {
-        this.tripRepository = tripRepository;
-        this.shipRepository = shipRepository;
+    @Transactional
+    public Map<String, Object> createTrip(Trip trip) {
+        List<String> warnings = new ArrayList<>();
+        List<String> stockUpdates = new ArrayList<>();
+
+        // Iterar sobre los ítems usados en el viaje
+        for (TripStockItem tripItem : trip.getUsedItems()) {
+            StockItem stockItem = stockItemRepository.findById(tripItem.getStockItem().getId())
+                    .orElseThrow(() -> new RuntimeException("StockItem no encontrado con id " + tripItem.getStockItem().getId()));
+
+            int requested = tripItem.getQuantityUsed();
+            int available = stockItem.getTotalQuantity() - stockItem.getUsedQuantity();
+
+            if (available >= requested) {
+                // descontar stock
+                stockItem.setUsedQuantity(stockItem.getUsedQuantity() + requested);
+                stockItemRepository.save(stockItem);
+                stockUpdates.add("Se usaron " + requested + " de " + stockItem.getName() +
+                        ". Stock restante: " + (stockItem.getTotalQuantity() - stockItem.getUsedQuantity()));
+            } else {
+                // no alcanza → se crea igual pero avisamos
+                warnings.add("No hay stock suficiente de: " + stockItem.getName() +
+                        " (pedido " + requested + ", disponible " + available + ")");
+            }
+        }
+
+        Trip savedTrip = tripRepository.save(trip);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("tripId", savedTrip.getId());
+        response.put("stockUpdates", stockUpdates);
+        response.put("warnings", warnings);
+
+        return response;
     }
 
-    // Obtener todos los viajes
-    public List<TripDTO> getAllTrips() {
-        return tripRepository.findAll().stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public List<Trip> findAll() {
+        return tripRepository.findAll();
     }
 
-    // Obtener viaje por ID
-    public Optional<TripDTO> getTripById(Long id) {
-        return tripRepository.findById(id).map(this::toDTO);
+    public Trip findById(Long id) {
+        return tripRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trip no encontrado con id " + id));
     }
 
-    // Crear viaje
-    public Optional<TripDTO> createTrip(TripDTO tripDTO) {
-        Optional<Ship> shipOpt = shipRepository.findById(tripDTO.getShipId());
-        if (shipOpt.isEmpty()) return Optional.empty();
-
-        Trip trip = toEntity(tripDTO, shipOpt.get());
-        return Optional.of(toDTO(tripRepository.save(trip)));
-    }
-
-    // Actualizar viaje
-    public Optional<TripDTO> updateTrip(Long id, TripDTO tripDTO) {
-        return tripRepository.findById(id).map(existing -> {
-            Optional<Ship> shipOpt = shipRepository.findById(tripDTO.getShipId());
-            if (shipOpt.isEmpty()) return null;
-
-            existing.setDepartureDate(tripDTO.getDepartureDate());
-            existing.setReturnDate(tripDTO.getReturnDate());
-            existing.setFoodExpense(tripDTO.getFoodExpense());
-            existing.setShacklesExpense(tripDTO.getShacklesExpense());
-            existing.setCablesExpense(tripDTO.getCablesExpense());
-            existing.setOtherExpenses(tripDTO.getOtherExpenses());
-
-            // Campos de combustible, aceite y filtros
-            existing.setCombustible(tripDTO.getCombustible());
-            existing.setAceite(tripDTO.getAceite());
-            existing.setFiltros(tripDTO.getFiltros());
-            existing.setCombustibleUsed(tripDTO.getCombustibleUsed());
-            existing.setAceiteUsed(tripDTO.getAceiteUsed());
-            existing.setFiltrosUsed(tripDTO.getFiltrosUsed());
-
-            existing.setShacklesUsed(tripDTO.getShacklesUsed());
-            existing.setCargoUsed(tripDTO.getCargoUsed());
-            existing.setShip(shipOpt.get());
-
-            return toDTO(tripRepository.save(existing));
-        });
-    }
-
-    // Eliminar viaje
-    public void deleteTrip(Long id) {
+    public void delete(Long id) {
         tripRepository.deleteById(id);
     }
 
-    // Helpers: convertir entidad a DTO
-    private TripDTO toDTO(Trip trip) {
-        return TripDTO.builder()
-                .id(trip.getId())
-                .departureDate(trip.getDepartureDate())
-                .returnDate(trip.getReturnDate())
-                .foodExpense(trip.getFoodExpense())
-                .shacklesExpense(trip.getShacklesExpense())
-                .cablesExpense(trip.getCablesExpense())
-                .otherExpenses(trip.getOtherExpenses())
-                .combustible(trip.getCombustible())
-                .aceite(trip.getAceite())
-                .filtros(trip.getFiltros())
-                .combustibleUsed(trip.getCombustibleUsed())
-                .aceiteUsed(trip.getAceiteUsed())
-                .filtrosUsed(trip.getFiltrosUsed())
-                .shacklesUsed(trip.getShacklesUsed())
-                .cargoUsed(trip.getCargoUsed())
-                .shipId(trip.getShip().getId())
-                .build();
-    }
+    public Trip updateReturnDate(Long tripId, LocalDate returnDate) {
+        Trip existingTrip = findById(tripId);
 
-    // Helpers: convertir DTO a entidad
-    private Trip toEntity(TripDTO dto, Ship ship) {
-        return Trip.builder()
-                .id(dto.getId())
-                .departureDate(dto.getDepartureDate())
-                .returnDate(dto.getReturnDate())
-                .foodExpense(dto.getFoodExpense())
-                .shacklesExpense(dto.getShacklesExpense())
-                .cablesExpense(dto.getCablesExpense())
-                .otherExpenses(dto.getOtherExpenses())
-                .combustible(dto.getCombustible())
-                .aceite(dto.getAceite())
-                .filtros(dto.getFiltros())
-                .combustibleUsed(dto.getCombustibleUsed())
-                .aceiteUsed(dto.getAceiteUsed())
-                .filtrosUsed(dto.getFiltrosUsed())
-                .shacklesUsed(dto.getShacklesUsed())
-                .cargoUsed(dto.getCargoUsed())
-                .ship(ship)
-                .build();
+
+        if (returnDate.isBefore(existingTrip.getDepartureDate())) {
+            throw new RuntimeException("La fecha de regreso no puede ser anterior a la fecha de salida");
+        }
+
+        existingTrip.setReturnDate(returnDate);
+        return tripRepository.save(existingTrip);
     }
 }
