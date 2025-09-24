@@ -2,7 +2,10 @@ package com.example.GSVessel.Security;
 
 import com.example.GSVessel.Service.UserDetailService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +25,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailService userDetailsService;
 
     @Value("${jwt.secret}")
-    private String secret; // poné en application.properties: jwt.secret=tu_clave_secreta
+    private String secret;
 
     public JwtFilter(UserDetailService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -34,29 +37,46 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-
         String username = null;
         String jwt = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             try {
-                Claims claims = Jwts.parser()
-                        .setSigningKey(secret)
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(secret.getBytes())
+                        .build()
                         .parseClaimsJws(jwt)
                         .getBody();
                 username = claims.getSubject();
-            } catch (Exception e) {
+            } catch (ExpiredJwtException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token expirado");
+                return;
+            } catch (SignatureException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Firma del token inválida");
+                return;
+            } catch (JwtException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token inválido");
                 return;
             }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (userDetails != null) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Usuario no encontrado");
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
