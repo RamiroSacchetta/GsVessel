@@ -1,17 +1,23 @@
-package com.example.GSVessel.Model;
+package com.example.GSVessel.Model; // 👈 Usa minúsculas
 
-import com.example.GSVessel.Model.Enums.Role;
+import com.example.GSVessel.Model.Enums.Role; // Ajusta según tu estructura
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor // 👈 Constructor vacío obligatorio para JPA
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email")
+})
 public class User {
 
     @Id
@@ -20,31 +26,27 @@ public class User {
 
     @NotBlank(message = "El username no puede estar vacío")
     @Size(min = 3, max = 50, message = "El username debe tener entre 3 y 50 caracteres")
-    @Column(unique = true)
     private String username;
 
     @NotBlank(message = "El email no puede estar vacío")
     @Email(message = "El email debe ser válido")
-    @Column(unique = true)
     private String email;
 
     @NotBlank(message = "La contraseña no puede estar vacía")
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-
-@ManyToOne
+    @ManyToOne
     @JoinColumn(name = "plan_id")
-    private com.example.gsvessel.model.Plan plan;
-
+    private com.example.gsvessel.model.Plan plan; // 👈 Sin nombre de paquete si está en el mismo
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Barco> barcos;
 
     @Column(nullable = false)
     private boolean enabled = false;
-
 }

@@ -7,35 +7,25 @@ import com.example.GSVessel.Model.VerificationToken;
 import com.example.GSVessel.Model.Enums.Role;
 import com.example.GSVessel.Repository.UserRepository;
 import com.example.GSVessel.Repository.TokenRepository;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
-
-    @Autowired
-    public UserService(UserRepository userRepository,
-                       TokenRepository tokenRepository,
-                       PasswordEncoder passwordEncoder,
-                       JavaMailSender mailSender) {
-        this.userRepository = userRepository;
-        this.tokenRepository = tokenRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.mailSender = mailSender;
-    }
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -46,59 +36,39 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    //  Registro con email de confirmación
-    public User createUser(User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
-        }
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        if (user.getRole() == null) {
-            user.setRole(Role.USER);
-        }
-        user.setEnabled(false);
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
-    }
-
+    // Registro público con verificación por email
+    @Transactional
     public User registerUser(User user) {
         if (existsByUsername(user.getUsername())) {
             throw new UserAlreadyExistsException("username", user.getUsername());
         }
-
-
         if (existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("email", user.getEmail());
         }
 
-
-        if (user.getRole() == null) {
-            user.setRole(Role.USER);
-        }
-
+        user.setRole(user.getRole() != null ? user.getRole() : Role.USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setEnabled(false); // ❌ hasta confirmar email
+        user.setEnabled(false); // Deshabilitado hasta confirmar email
+
         User savedUser = userRepository.save(user);
 
-        // Generar token
+        // Generar token de verificación
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = VerificationToken.builder()
                 .token(token)
                 .user(savedUser)
-                .expiryDate(LocalDateTime.now().plusHours(24)) // 24 horas
+                .expiryDate(LocalDateTime.now().plusHours(24))
                 .build();
         tokenRepository.save(verificationToken);
- /*
-        // Enviar email
+
+        // Enviar email de confirmación
         sendConfirmationEmail(savedUser.getEmail(), token);
-*/
+
         return savedUser;
     }
 
-    // 🔹 Confirmación de usuario
+    // Confirmación de cuenta mediante token
+    @Transactional
     public String confirmUser(String token) {
         VerificationToken verificationToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Token inválido"));
@@ -111,21 +81,36 @@ public class UserService {
         user.setEnabled(true);
         userRepository.save(user);
 
-        tokenRepository.delete(verificationToken); // opcional: limpiar token usado
-
+        tokenRepository.delete(verificationToken);
         return "Cuenta confirmada con éxito. Ahora puedes iniciar sesión.";
     }
 
+    // Actualización segura de usuario
+    @Transactional
     public User updateUser(Long id, User userDetails) {
         User user = getUserById(id);
 
-        user.setUsername(userDetails.getUsername());
-        user.setEmail(userDetails.getEmail());
+        // Validar cambios únicos
+        if (!user.getUsername().equals(userDetails.getUsername())) {
+            if (existsByUsername(userDetails.getUsername())) {
+                throw new UserAlreadyExistsException("username", userDetails.getUsername());
+            }
+            user.setUsername(userDetails.getUsername());
+        }
 
+        if (!user.getEmail().equals(userDetails.getEmail())) {
+            if (existsByEmail(userDetails.getEmail())) {
+                throw new UserAlreadyExistsException("email", userDetails.getEmail());
+            }
+            user.setEmail(userDetails.getEmail());
+        }
+
+        // Actualizar contraseña solo si se proporciona
         if (userDetails.getPassword() != null && !userDetails.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
         }
 
+        // Solo admins deberían poder cambiar roles (validar en el controlador o con Spring Security)
         if (userDetails.getRole() != null) {
             user.setRole(userDetails.getRole());
         }
@@ -133,6 +118,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(Long id) {
         User user = getUserById(id);
         userRepository.delete(user);
@@ -146,16 +132,15 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
-    // 🔹 Método auxiliar para enviar emails
+    // Envío de email de confirmación
     private void sendConfirmationEmail(String to, String token) {
         String confirmationUrl = "http://localhost:8080/api/auth/confirm?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("Confirma tu cuenta");
-        message.setText("Haz clic en el siguiente enlace para confirmar tu cuenta: " + confirmationUrl);
+        message.setSubject("Confirma tu cuenta en GSVessel");
+        message.setText("Hola,\n\nHaz clic en el siguiente enlace para activar tu cuenta:\n" + confirmationUrl + "\n\nEl enlace expira en 24 horas.");
 
         mailSender.send(message);
     }
-
 }

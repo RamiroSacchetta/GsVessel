@@ -3,15 +3,16 @@ package com.example.GSVessel.Controller;
 import com.example.GSVessel.Exception.UserAlreadyExistsException;
 import com.example.GSVessel.Exception.UserNotFoundException;
 import com.example.GSVessel.Model.User;
+import com.example.GSVessel.Model.DTO.RegisterUserDTO;
 import com.example.GSVessel.Model.DTO.UserDTO;
 import com.example.GSVessel.Service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,13 +49,23 @@ public class UserController {
         return ResponseEntity.ok(dto);
     }
 
-    // Crear usuario
-    @PostMapping
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        UserDTO dto = new UserDTO(createdUser.getId(), createdUser.getUsername(),
-                createdUser.getEmail(), createdUser.getRole());
-        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    // Registro público (sin rol en la entrada)
+    @PostMapping("/register")
+    public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody RegisterUserDTO dto) {
+        User user = new User();
+        user.setUsername(dto.username());
+        user.setEmail(dto.email());
+        user.setPassword(dto.password());
+        // El rol se asigna automáticamente como USER en el servicio
+
+        User createdUser = userService.registerUser(user);
+        UserDTO responseDto = new UserDTO(
+                createdUser.getId(),
+                createdUser.getUsername(),
+                createdUser.getEmail(),
+                createdUser.getRole()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     // Actualizar usuario
