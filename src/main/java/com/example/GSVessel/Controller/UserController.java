@@ -3,7 +3,7 @@ package com.example.GSVessel.Controller;
 import com.example.GSVessel.Exception.UserAlreadyExistsException;
 import com.example.GSVessel.Exception.UserNotFoundException;
 import com.example.GSVessel.Model.User;
-import com.example.GSVessel.Model.DTO.RegisterUserDTO;
+import com.example.GSVessel.DTO.RegisterUserDTO;
 import com.example.GSVessel.Model.DTO.UserDTO;
 import com.example.GSVessel.Service.UserService;
 import jakarta.validation.Valid;

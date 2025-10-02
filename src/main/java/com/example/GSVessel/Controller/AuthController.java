@@ -1,9 +1,11 @@
 package com.example.GSVessel.Controller;
 
+import com.example.GSVessel.DTO.RegisterUserDTO;
 import com.example.GSVessel.DTO.UserLoginDTO;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Service.UserService;
 import com.example.GSVessel.Security.JwtUtil;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,26 +31,38 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
-    // Registro de usuario
+    // ✅ Registro seguro con DTO
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
+    public ResponseEntity<String> register(@Valid @RequestBody com.example.GSVessel.DTO.RegisterUserDTO dto) {
+        User user = new User();
+        user.setUsername(dto.username());
+        user.setEmail(dto.email());
+        user.setPassword(dto.password());
+        // El rol se asigna como USER en el servicio
+
         userService.registerUser(user);
         return ResponseEntity.ok("Usuario registrado. Revisa tu email para confirmar la cuenta.");
     }
 
-    // Confirmar cuenta con token
+    // ✅ Confirmación con manejo básico de errores
     @GetMapping("/confirm")
     public ResponseEntity<String> confirm(@RequestParam String token) {
-        String result = userService.confirmUser(token);
-        return ResponseEntity.ok(result);
+        try {
+            String result = userService.confirmUser(token);
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    // Login con JWT
+    // ✅ Login con JWT
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserLoginDTO request) {
+    public ResponseEntity<String> login(@Valid @RequestBody UserLoginDTO request) {
         try {
+            // Asegúrate de que el primer parámetro sea el "username" que espera Spring Security
+            // Si usas email como username, envía request.getEmail()
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
             String jwt = jwtUtil.generateToken(authentication.getName());

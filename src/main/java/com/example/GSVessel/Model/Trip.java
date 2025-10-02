@@ -1,5 +1,6 @@
 package com.example.GSVessel.Model;
 
+
 import jakarta.persistence.*;
 import lombok.*;
 

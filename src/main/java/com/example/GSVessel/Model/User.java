@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 @Data
-@NoArgsConstructor // 👈 Constructor vacío obligatorio para JPA
+@NoArgsConstructor
 @Entity
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = "username"),
@@ -42,7 +42,7 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "plan_id")
-    private com.example.gsvessel.model.Plan plan; // 👈 Sin nombre de paquete si está en el mismo
+    private com.example.gsvessel.model.Plan plan; //
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Barco> barcos;
