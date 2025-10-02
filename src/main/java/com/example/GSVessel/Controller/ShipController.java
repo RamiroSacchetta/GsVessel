@@ -24,9 +24,8 @@ public class ShipController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Ship> getShipById(@PathVariable Long id) {
-        return shipService.getShipById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Ship ship = shipService.getShipById(id); // lanza EntityNotFoundException si no existe
+        return ResponseEntity.ok(ship);
     }
 
     @PostMapping

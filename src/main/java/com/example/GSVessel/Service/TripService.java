@@ -1,5 +1,8 @@
 package com.example.GSVessel.Service;
 
+import com.example.GSVessel.Exception.BusinessException;
+import com.example.GSVessel.Exception.EntityNotFoundException;
+import com.example.GSVessel.Exception.ListNoContentException;
 import com.example.GSVessel.Model.StockItem;
 import com.example.GSVessel.Model.Trip;
 import com.example.GSVessel.Model.TripStockItem;
@@ -19,27 +22,26 @@ public class TripService {
     private final TripRepository tripRepository;
     private final StockItemRepository stockItemRepository;
 
+    // Crear viaje y actualizar stock
     @Transactional
     public Map<String, Object> createTrip(Trip trip) {
         List<String> warnings = new ArrayList<>();
         List<String> stockUpdates = new ArrayList<>();
 
-        // Iterar sobre los ítems usados en el viaje
         for (TripStockItem tripItem : trip.getUsedItems()) {
             StockItem stockItem = stockItemRepository.findById(tripItem.getStockItem().getId())
-                    .orElseThrow(() -> new RuntimeException("StockItem no encontrado con id " + tripItem.getStockItem().getId()));
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "StockItem no encontrado con id: " + tripItem.getStockItem().getId()));
 
             int requested = tripItem.getQuantityUsed();
             int available = stockItem.getTotalQuantity() - stockItem.getUsedQuantity();
 
             if (available >= requested) {
-                // descontar stock
                 stockItem.setUsedQuantity(stockItem.getUsedQuantity() + requested);
                 stockItemRepository.save(stockItem);
                 stockUpdates.add("Se usaron " + requested + " de " + stockItem.getName() +
                         ". Stock restante: " + (stockItem.getTotalQuantity() - stockItem.getUsedQuantity()));
             } else {
-                // no alcanza → se crea igual pero avisamos
                 warnings.add("No hay stock suficiente de: " + stockItem.getName() +
                         " (pedido " + requested + ", disponible " + available + ")");
             }
@@ -55,25 +57,33 @@ public class TripService {
         return response;
     }
 
+    // Listar todos los viajes
     public List<Trip> findAll() {
-        return tripRepository.findAll();
+        List<Trip> trips = tripRepository.findAll();
+        if (trips.isEmpty()) {
+            throw new ListNoContentException("No se encontraron viajes");
+        }
+        return trips;
     }
 
+    // Buscar viaje por id
     public Trip findById(Long id) {
         return tripRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trip no encontrado con id " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Trip no encontrado con id: " + id));
     }
 
+    // Eliminar viaje
     public void delete(Long id) {
-        tripRepository.deleteById(id);
+        Trip existing = findById(id); // <-- lanza EntityNotFoundException si no existe
+        tripRepository.delete(existing);
     }
 
+    // Actualizar fecha de regreso
     public Trip updateReturnDate(Long tripId, LocalDate returnDate) {
         Trip existingTrip = findById(tripId);
 
-
         if (returnDate.isBefore(existingTrip.getDepartureDate())) {
-            throw new RuntimeException("La fecha de regreso no puede ser anterior a la fecha de salida");
+            throw new BusinessException("La fecha de regreso no puede ser anterior a la fecha de salida");
         }
 
         existingTrip.setReturnDate(returnDate);

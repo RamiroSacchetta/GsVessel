@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/equipment")
@@ -59,13 +60,9 @@ public class EquipmentController {
 
     // Eliminar equipo
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEquipment(@PathVariable Long id) {
-        boolean deleted = equipmentService.deleteEquipment(id);
-        if (deleted) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<?> deleteEquipment(@PathVariable Long id) {
+        equipmentService.deleteEquipment(id);
+        return ResponseEntity.ok(Map.of("message", "Equipo eliminado"));
     }
 
     // Filtrar por barco

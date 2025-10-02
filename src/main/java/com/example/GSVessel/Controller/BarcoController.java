@@ -23,12 +23,10 @@ public class BarcoController {
         return barcoService.getAllBarcos();
     }
 
-    // Obtener barco por id
     @GetMapping("/{id}")
     public ResponseEntity<Barco> getBarcoById(@PathVariable Long id) {
-        return barcoService.getBarcoById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Barco barco = barcoService.getBarcoById(id);
+        return ResponseEntity.ok(barco);
     }
 
     // Crear barco asignando un usuario dueño

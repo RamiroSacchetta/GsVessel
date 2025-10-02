@@ -1,11 +1,13 @@
 package com.example.GSVessel.Service;
 
+import com.example.GSVessel.Exception.BusinessException;
+import com.example.GSVessel.Exception.EntityNotFoundException;
+import com.example.GSVessel.Exception.ListNoContentException;
 import com.example.GSVessel.Model.Ship;
 import com.example.GSVessel.Repository.ShipRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ShipService {
@@ -16,34 +18,53 @@ public class ShipService {
         this.shipRepository = shipRepository;
     }
 
+    // Listar todos los barcos
     public List<Ship> getAllShips() {
-        return shipRepository.findAll();
+        List<Ship> ships = shipRepository.findAll();
+        if (ships.isEmpty()) {
+            throw new ListNoContentException("No se encontraron barcos");
+        }
+        return ships;
     }
 
-    public Optional<Ship> getShipById(Long id) {
-        return shipRepository.findById(id);
+    // Obtener barco por id
+    public Ship getShipById(Long id) {
+        return shipRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + id));
     }
 
+    // Crear barco
     public Ship saveShip(Ship ship) {
+        if (ship.getName() == null || ship.getName().isBlank()) {
+            throw new BusinessException("El nombre del barco es obligatorio");
+        }
+        if (ship.getRegistration() == null || ship.getRegistration().isBlank()) {
+            throw new BusinessException("La matrícula del barco es obligatoria");
+        }
         return shipRepository.save(ship);
     }
 
+    // Actualizar barco
     public Ship updateShip(Long id, Ship shipDetails) {
-        return shipRepository.findById(id).map(ship -> {
-            ship.setName(shipDetails.getName());
-            ship.setRegistration(shipDetails.getRegistration());
-            ship.setHoursUsed(shipDetails.getHoursUsed());
-            ship.setActive(shipDetails.isActive());
-            ship.setCrewSize(shipDetails.getCrewSize());
-            ship.setCargoCrates(shipDetails.getCargoCrates());
-            ship.setNumberOfNets(shipDetails.getNumberOfNets());
-            ship.setOwner(shipDetails.getOwner());
-            return shipRepository.save(ship);
-        }).orElseThrow(() -> new RuntimeException("Ship not found with id " + id));
+        Ship existing = shipRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + id));
+
+        if (shipDetails.getName() != null) existing.setName(shipDetails.getName());
+        if (shipDetails.getRegistration() != null) existing.setRegistration(shipDetails.getRegistration());
+        existing.setHoursUsed(shipDetails.getHoursUsed());
+        existing.setActive(shipDetails.isActive());
+        existing.setCrewSize(shipDetails.getCrewSize());
+        existing.setCargoCrates(shipDetails.getCargoCrates());
+        existing.setNumberOfNets(shipDetails.getNumberOfNets());
+        if (shipDetails.getOwner() != null) existing.setOwner(shipDetails.getOwner());
+
+        return shipRepository.save(existing);
     }
 
+    // Eliminar barco
     public void deleteShip(Long id) {
-        shipRepository.deleteById(id);
+        Ship existing = shipRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + id));
+        shipRepository.delete(existing);
     }
 }
-

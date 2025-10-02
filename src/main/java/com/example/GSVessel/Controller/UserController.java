@@ -1,7 +1,5 @@
 package com.example.GSVessel.Controller;
 
-import com.example.GSVessel.Exception.UserAlreadyExistsException;
-import com.example.GSVessel.Exception.UserNotFoundException;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.DTO.RegisterUserDTO;
 import com.example.GSVessel.Model.DTO.UserDTO;
@@ -83,7 +81,7 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
-
+/*
     // Manejo de excepciones personalizadas
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleNotFound(UserNotFoundException ex) {
@@ -94,7 +92,7 @@ public class UserController {
     public ResponseEntity<String> handleAlreadyExists(UserAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
-
+*/
     // Manejo de errores de validación
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {

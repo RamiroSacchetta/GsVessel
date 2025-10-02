@@ -30,4 +30,6 @@ public class Barco {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+
 }

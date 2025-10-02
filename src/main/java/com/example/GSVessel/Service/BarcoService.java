@@ -1,5 +1,7 @@
 package com.example.GSVessel.Service;
 
+import com.example.GSVessel.Exception.EntityNotFoundException;
+import com.example.GSVessel.Exception.ListNoContentException;
 import com.example.GSVessel.Model.Barco;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Repository.BarcoRepository;
@@ -7,7 +9,6 @@ import com.example.GSVessel.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BarcoService {
@@ -22,18 +23,23 @@ public class BarcoService {
 
     // Listar todos los barcos
     public List<Barco> getAllBarcos() {
-        return barcoRepository.findAll();
+        List<Barco> barcos = barcoRepository.findAll();
+        if (barcos.isEmpty()) {
+            throw new ListNoContentException("No se encontraron barcos");
+        }
+        return barcos;
     }
 
     // Obtener barco por id
-    public Optional<Barco> getBarcoById(Long id) {
-        return barcoRepository.findById(id);
+    public Barco getBarcoById(Long id) {
+        return barcoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Barco con id " + id + " no encontrado"));
     }
 
     // Crear un barco asignándole un usuario dueño
     public Barco createBarco(Barco barco, Long userId) {
         User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuario con id " + userId + " no encontrado"));
         barco.setOwner(owner);
         return barcoRepository.save(barco);
     }
@@ -41,7 +47,7 @@ public class BarcoService {
     // Actualizar barco
     public Barco updateBarco(Long id, Barco updatedBarco) {
         Barco barco = barcoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Barco no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Barco con id " + id + " no encontrado"));
         barco.setNombre(updatedBarco.getNombre());
         barco.setTipo(updatedBarco.getTipo());
         barco.setEslora(updatedBarco.getEslora());
@@ -53,14 +59,20 @@ public class BarcoService {
     // Eliminar barco
     public void deleteBarco(Long id) {
         Barco barco = barcoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Barco no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Barco con id " + id + " no encontrado"));
         barcoRepository.delete(barco);
     }
 
     // Obtener barcos por usuario
     public List<Barco> getBarcosByUser(Long userId) {
         User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return owner.getBarcos();
+                .orElseThrow(() -> new EntityNotFoundException("Usuario con id " + userId + " no encontrado"));
+
+        List<Barco> barcos = owner.getBarcos();
+        if (barcos.isEmpty()) {
+            throw new ListNoContentException("El usuario con id " + userId + " no tiene barcos asignados");
+        }
+        return barcos;
     }
 }
+
