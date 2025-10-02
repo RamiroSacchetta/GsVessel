@@ -19,7 +19,8 @@
 
     <properties>
         <java.version>21</java.version>
-        <jjwt.version>0.12.5</jjwt.version>
+        <!-- 🔑 Bajamos a la versión estable 0.11.5 -->
+        <jjwt.version>0.11.5</jjwt.version>
     </properties>
 
     <dependencies>
@@ -64,11 +65,13 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok (versión gestionada por Spring Boot) -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
             <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
 
         <!-- Testing -->
@@ -83,7 +86,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JWT -->
+        <!-- JWT (versión 0.11.5 compatible con parserBuilder) -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -106,15 +109,17 @@
 
     <build>
         <plugins>
-            <!-- Compiler plugin con Lombok (sin versión explícita) -->
+            <!-- Compiler plugin con Lombok -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>1.18.34</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
