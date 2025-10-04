@@ -2,6 +2,7 @@ package com.example.GSVessel.DTO;
 
 import com.example.GSVessel.Model.Enums.EquipmentCategory;
 import com.example.GSVessel.Model.Enums.EquipmentLocation;
+import org.springframework.web.multipart.MultipartFile;
 
 public class EquipmentDTO {
 
@@ -13,13 +14,13 @@ public class EquipmentDTO {
     private int hoursUsed;
     private Double budget;
     private String description;
-    private String imageUrl;
     private Long shipId;
+    MultipartFile image;
 
     public EquipmentDTO() {}
 
     public EquipmentDTO(Long id, String name, EquipmentCategory category, EquipmentLocation location,
-                        Double consumption, int hoursUsed, Double budget, String description, String imageUrl, Long shipId) {
+                        Double consumption, int hoursUsed, Double budget, String description, Long shipId, MultipartFile image) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -28,8 +29,9 @@ public class EquipmentDTO {
         this.hoursUsed = hoursUsed;
         this.budget = budget;
         this.description = description;
-        this.imageUrl = imageUrl;
         this.shipId = shipId;
+        this.image = image;
+
     }
 
     // Getters y setters
@@ -57,9 +59,9 @@ public class EquipmentDTO {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-
     public Long getShipId() { return shipId; }
     public void setShipId(Long shipId) { this.shipId = shipId; }
+
+    public MultipartFile getImage() { return image; }
+    public void setImage(MultipartFile image) { this.image = image; }
 }

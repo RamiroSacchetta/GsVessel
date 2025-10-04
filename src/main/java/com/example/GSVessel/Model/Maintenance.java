@@ -1,5 +1,6 @@
 package com.example.GSVessel.Model;
 
+import com.example.GSVessel.DTO.MaintenanceDTO;
 import com.example.GSVessel.Model.Enums.TipoMaintenance;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -37,4 +38,6 @@ public class Maintenance {
     @ManyToOne
     @JoinColumn(name = "equipment_id", nullable = false)
     private Equipment equipment;
+
+    private String imageUrl;
 }

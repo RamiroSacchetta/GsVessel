@@ -7,7 +7,7 @@ import com.example.GSVessel.Model.CrewMember;
 import com.example.GSVessel.Model.Ship;
 import com.example.GSVessel.Repository.CrewMemberRepository;
 import com.example.GSVessel.Repository.ShipRepository;
-import com.example.GSVessel.Repository.Mapper.CrewMemberMapper;
+import com.example.GSVessel.Mapper.CrewMemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

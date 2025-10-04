@@ -1,4 +1,4 @@
-package com.example.gsvessel.model;
+package com.example.GSVessel.Model;
 
 import jakarta.persistence.*;
 import lombok.*;

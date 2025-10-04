@@ -1,4 +1,4 @@
-package com.example.GSVessel.Model; // 👈 Usa minúsculas
+package com.example.GSVessel.Model; //
 
 import com.example.GSVessel.Model.Enums.Role; // Ajusta según tu estructura
 import jakarta.persistence.*;
@@ -42,7 +42,7 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "plan_id")
-    private com.example.gsvessel.model.Plan plan; //
+    private com.example.GSVessel.Model.Plan plan; //
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Barco> barcos;

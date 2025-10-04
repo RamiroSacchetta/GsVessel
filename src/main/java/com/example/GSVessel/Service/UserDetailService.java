@@ -1,13 +1,13 @@
 package com.example.GSVessel.Service;
 
-import com.example.GSVessel.Exception.EntityNotFoundException;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -22,12 +22,12 @@ public class UserDetailService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) {
-        // Buscamos el usuario por username/email
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // Buscamos el usuario por username
         User user = userRepository.findByUsername(email)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con email: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
 
-        // Convertimos el enum Role en autoridad de Spring Security
+        // Convertimos el enum Role en una autoridad de Spring Security
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword()) // ⚠️ debe estar encriptada con BCrypt
@@ -35,4 +35,3 @@ public class UserDetailService implements UserDetailsService {
                 .build();
     }
 }
-

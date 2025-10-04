@@ -1,3 +1,5 @@
+package com.example.GSVessel.DTO;
+
 import com.example.GSVessel.Model.Ship;
 import com.example.GSVessel.Model.TripStockItem;
 import lombok.AllArgsConstructor;

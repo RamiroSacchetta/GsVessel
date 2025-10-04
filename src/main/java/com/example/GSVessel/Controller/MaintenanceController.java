@@ -1,27 +1,30 @@
 package com.example.GSVessel.Controller;
 
 import com.example.GSVessel.DTO.MaintenanceDTO;
-import com.example.GSVessel.Mapper.MaintenanceMapper;
 import com.example.GSVessel.Model.Enums.TipoMaintenance;
-import com.example.GSVessel.Model.Maintenance;
 import com.example.GSVessel.Service.MaintenanceService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("/api/maintenance")
 public class MaintenanceController {
 
-    @Autowired
-    private MaintenanceService maintenanceService;
+    private final MaintenanceService maintenanceService;
 
-    // Crear mantenimiento
+    // Inyección por constructor (mejor práctica que @Autowired)
+    public MaintenanceController(MaintenanceService maintenanceService) {
+        this.maintenanceService = maintenanceService;
+    }
+
+    // Crear mantenimiento (con imagen opcional)
     @PostMapping
-    public ResponseEntity<MaintenanceDTO> create(@RequestBody MaintenanceDTO maintenanceDTO) {
+    public ResponseEntity<MaintenanceDTO> create(@ModelAttribute MaintenanceDTO maintenanceDTO) {
         MaintenanceDTO saved = maintenanceService.create(maintenanceDTO);
-        return ResponseEntity.status(201).body(saved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     // Listar todos los mantenimientos
@@ -42,9 +45,11 @@ public class MaintenanceController {
         return ResponseEntity.ok(maintenanceService.findByTipo(tipo));
     }
 
-    // Actualizar mantenimiento
+    // Actualizar mantenimiento (con imagen opcional)
     @PutMapping("/{id}")
-    public ResponseEntity<MaintenanceDTO> update(@PathVariable Long id, @RequestBody MaintenanceDTO dto) {
+    public ResponseEntity<MaintenanceDTO> update(
+            @PathVariable Long id,
+            @ModelAttribute MaintenanceDTO dto) {
         return ResponseEntity.ok(maintenanceService.update(id, dto));
     }
 

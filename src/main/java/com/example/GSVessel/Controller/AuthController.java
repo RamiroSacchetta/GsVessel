@@ -31,7 +31,6 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
-    // ✅ Registro seguro con DTO
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody com.example.GSVessel.DTO.RegisterUserDTO dto) {
         User user = new User();
@@ -44,7 +43,6 @@ public class AuthController {
         return ResponseEntity.ok("Usuario registrado. Revisa tu email para confirmar la cuenta.");
     }
 
-    // ✅ Confirmación con manejo básico de errores
     @GetMapping("/confirm")
     public ResponseEntity<String> confirm(@RequestParam String token) {
         try {
@@ -55,7 +53,6 @@ public class AuthController {
         }
     }
 
-    // ✅ Login con JWT
     @PostMapping("/login")
     public ResponseEntity<String> login(@Valid @RequestBody UserLoginDTO request) {
         try {

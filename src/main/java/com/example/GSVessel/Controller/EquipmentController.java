@@ -1,7 +1,6 @@
 package com.example.GSVessel.Controller;
 
 import com.example.GSVessel.DTO.EquipmentDTO;
-import com.example.GSVessel.Model.Equipment;
 import com.example.GSVessel.Model.Enums.EquipmentCategory;
 import com.example.GSVessel.Service.EquipmentService;
 import org.springframework.http.HttpStatus;
@@ -23,38 +22,24 @@ public class EquipmentController {
 
     // Listar todos los equipos
     @GetMapping
-    public List<EquipmentDTO> getAllEquipment() {
-        return equipmentService.getAllEquipment();
+    public ResponseEntity<List<EquipmentDTO>> getAllEquipment() {
+        List<EquipmentDTO> equipments = equipmentService.getAllEquipment();
+        return ResponseEntity.ok(equipments);
     }
 
-    // Crear nuevo equipo
+    // Crear nuevo equipo (con imagen opcional)
     @PostMapping
-    public ResponseEntity<EquipmentDTO> createEquipment(@RequestBody EquipmentDTO equipmentDTO) {
-        Equipment equipment = new Equipment();
-        equipment.setName(equipmentDTO.getName());
-        equipment.setCategory(equipmentDTO.getCategory());
-        equipment.setLocation(equipmentDTO.getLocation());
-        equipment.setConsumption(equipmentDTO.getConsumption());
-        equipment.setHoursUsed(equipmentDTO.getHoursUsed());
-        equipment.setBudget(equipmentDTO.getBudget());
-        equipment.setDescription(equipmentDTO.getDescription());
-        equipment.setImageUrl(equipmentDTO.getImageUrl());
-
-        if (equipmentDTO.getShipId() != null) {
-            equipmentService.getAllEquipment(); // opcional si quieres validar el barco
-        }
-
-        Equipment saved = equipmentService.saveEquipment(equipment);
-        return new ResponseEntity<>(equipmentService.convertToDTO(saved), HttpStatus.CREATED);
+    public ResponseEntity<EquipmentDTO> createEquipment(@ModelAttribute EquipmentDTO equipmentDTO) {
+        EquipmentDTO saved = equipmentService.saveEquipment(equipmentDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // Actualizar equipo
+    // Actualizar equipo (con imagen opcional)
     @PutMapping("/{id}")
-    public ResponseEntity<EquipmentDTO> updateEquipment(@PathVariable Long id, @RequestBody EquipmentDTO equipmentDTO) {
+    public ResponseEntity<EquipmentDTO> updateEquipment(
+            @PathVariable Long id,
+            @ModelAttribute EquipmentDTO equipmentDTO) {
         EquipmentDTO updated = equipmentService.updateEquipment(id, equipmentDTO);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(updated);
     }
 
@@ -62,18 +47,20 @@ public class EquipmentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEquipment(@PathVariable Long id) {
         equipmentService.deleteEquipment(id);
-        return ResponseEntity.ok(Map.of("message", "Equipo eliminado"));
+        return ResponseEntity.ok(Map.of("message", "Equipo eliminado con éxito"));
     }
 
     // Filtrar por barco
     @GetMapping("/ship/{shipId}")
-    public List<EquipmentDTO> getEquipmentByShip(@PathVariable Long shipId) {
-        return equipmentService.getEquipmentByShip(shipId);
+    public ResponseEntity<List<EquipmentDTO>> getEquipmentByShip(@PathVariable Long shipId) {
+        List<EquipmentDTO> equipments = equipmentService.getEquipmentByShip(shipId);
+        return ResponseEntity.ok(equipments);
     }
 
     // Filtrar por categoría
     @GetMapping("/category/{category}")
-    public List<EquipmentDTO> getEquipmentByCategory(@PathVariable EquipmentCategory category) {
-        return equipmentService.getEquipmentByCategory(category);
+    public ResponseEntity<List<EquipmentDTO>> getEquipmentByCategory(@PathVariable EquipmentCategory category) {
+        List<EquipmentDTO> equipments = equipmentService.getEquipmentByCategory(category);
+        return ResponseEntity.ok(equipments);
     }
 }

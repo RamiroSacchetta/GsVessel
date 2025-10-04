@@ -10,7 +10,7 @@ public class MaintenanceMapper {
                 .id(maintenance.getId())
                 .fecha(maintenance.getFecha())
                 .costo(maintenance.getCosto())
-                .Descripcion(maintenance.getDescripcion())
+                .descripcion(maintenance.getDescripcion())
                 .tipoMaintenance(maintenance.getTipoMaintenance())
                 .build();
     }

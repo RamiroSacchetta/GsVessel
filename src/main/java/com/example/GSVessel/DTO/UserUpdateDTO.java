@@ -1,4 +1,4 @@
-package com.example.GSVessel.Model.DTO;
+package com.example.GSVessel.DTO;
 
 import com.example.GSVessel.Model.Enums.Role;
 import jakarta.validation.constraints.Email;

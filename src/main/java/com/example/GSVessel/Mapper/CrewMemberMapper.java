@@ -1,4 +1,4 @@
-package com.example.GSVessel.Repository.Mapper;
+package com.example.GSVessel.Mapper;
 
 import com.example.GSVessel.DTO.CrewMemberDTO;
 import com.example.GSVessel.Model.CrewMember;

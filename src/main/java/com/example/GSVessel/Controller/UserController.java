@@ -2,7 +2,7 @@ package com.example.GSVessel.Controller;
 
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.DTO.RegisterUserDTO;
-import com.example.GSVessel.Model.DTO.UserDTO;
+import com.example.GSVessel.DTO.UserDTO;
 import com.example.GSVessel.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,18 +81,7 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
-/*
-    // Manejo de excepciones personalizadas
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleNotFound(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<String> handleAlreadyExists(UserAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-*/
     // Manejo de errores de validación
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
