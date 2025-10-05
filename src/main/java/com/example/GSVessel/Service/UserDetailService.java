@@ -23,14 +23,13 @@ public class UserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Buscamos el usuario por username
-        User user = userRepository.findByUsername(email)
+        // Buscar usuario por email (ya que tu login usa request.getEmail())
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
 
-        // Convertimos el enum Role en una autoridad de Spring Security
         return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword()) // ⚠️ debe estar encriptada con BCrypt
+                .username(user.getEmail())
+                .password(user.getPassword()) // debe estar encriptada con BCrypt
                 .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
                 .build();
     }
