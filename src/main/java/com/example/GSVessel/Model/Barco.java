@@ -1,7 +1,11 @@
 package com.example.GSVessel.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -29,7 +33,14 @@ public class Barco {
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
+    @JsonBackReference
     private User owner;
+
+    @OneToMany(mappedBy = "barco", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Ship> ships;
+
+
 
 
 }

@@ -1,12 +1,6 @@
 package com.example.GSVessel.Security;
 
 import com.example.GSVessel.Service.UserDetailService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,12 +17,11 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final UserDetailService userDetailsService;
+    private final JwtUtil jwtUtil;
 
-    @Value("${jwt.secret}")
-    private String secret;
-
-    public JwtFilter(UserDetailService userDetailsService) {
+    public JwtFilter(UserDetailService userDetailsService, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -40,42 +33,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
+        // Extraer token del header
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-            try {
-                Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(secret.getBytes())
-                        .build()
-                        .parseClaimsJws(jwt)
-                        .getBody();
-                username = claims.getSubject();
-            } catch (ExpiredJwtException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token expirado");
-                return;
-            } catch (SignatureException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Firma del token inválida");
-                return;
-            } catch (JwtException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token inválido");
-                return;
-            }
+            jwt = authHeader.substring(7); // quitar "Bearer "
+            username = jwtUtil.extractUsername(jwt); // extrae username usando JwtUtil
         }
 
+        // Validar token y setear autenticación en SecurityContext
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            try {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (userDetails != null) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Usuario no encontrado");
-                return;
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 

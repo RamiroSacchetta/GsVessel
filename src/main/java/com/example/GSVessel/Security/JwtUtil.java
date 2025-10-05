@@ -7,15 +7,17 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
     private final String SECRET_KEY_STRING = "clave-ultra-secreta-andy-deja-el-lol-necesitamos-una-clave-mas-larga-para-cumplir-con-256-bits";
-    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes());
+    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
     private final long EXPIRATION_TIME = 86400000; // 1 día
 
+    // Genera token
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -25,26 +27,34 @@ public class JwtUtil {
                 .compact();
     }
 
+    // Obtiene Claims del token (evita parseo repetido)
+    private Claims getClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            return null; // Token inválido
+        }
+    }
+
+    // Extrae el username del token
     public String extractUsername(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.getSubject();
+        Claims claims = getClaims(token);
+        return claims != null ? claims.getSubject() : null;
     }
 
-    public boolean validateToken(String token, String username) {
-        return username.equals(extractUsername(token)) && !isTokenExpired(token);
-    }
-
+    // Verifica si el token expiró
     private boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return expiration.before(new Date());
+        Claims claims = getClaims(token);
+        return claims == null || claims.getExpiration().before(new Date());
+    }
+
+    // Valida token
+    public boolean validateToken(String token, String username) {
+        String tokenUsername = extractUsername(token);
+        return tokenUsername != null && tokenUsername.equals(username) && !isTokenExpired(token);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.GSVessel.Model; //
 
 import com.example.GSVessel.Model.Enums.Role; // Ajusta según tu estructura
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -44,8 +45,10 @@ public class User {
     @JoinColumn(name = "plan_id")
     private com.example.GSVessel.Model.Plan plan; //
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "owner")
+    @JsonManagedReference
     private List<Barco> barcos;
+
 
     @Column(nullable = false)
     private boolean enabled = false;

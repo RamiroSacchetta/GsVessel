@@ -44,6 +44,15 @@ public class BarcoService {
         return barcoRepository.save(barco);
     }
 
+    // En BarcoService
+    public Barco createBarco(Barco barco, String email) {
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        barco.setOwner(user);
+        return barcoRepository.save(barco);
+    }
+
+
     // Actualizar barco
     public Barco updateBarco(Long id, Barco updatedBarco) {
         Barco barco = barcoRepository.findById(id)

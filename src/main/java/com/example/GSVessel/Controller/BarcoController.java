@@ -4,6 +4,7 @@ import com.example.GSVessel.Model.Barco;
 import com.example.GSVessel.Service.BarcoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -30,9 +31,10 @@ public class BarcoController {
     }
 
     // Crear barco asignando un usuario dueño
-    @PostMapping("/user/{userId}")
-    public Barco createBarco(@PathVariable Long userId, @RequestBody Barco barco) {
-        return barcoService.createBarco(barco, userId);
+    @PostMapping
+    public Barco createBarco(@RequestBody Barco barco, Authentication authentication) {
+        String email = authentication.getName(); // viene del token JWT
+        return barcoService.createBarco(barco, email);
     }
 
     // Actualizar barco

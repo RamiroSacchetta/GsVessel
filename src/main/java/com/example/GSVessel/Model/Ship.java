@@ -1,5 +1,7 @@
 package com.example.GSVessel.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -19,13 +21,17 @@ public class Ship {
     private int numberOfNets;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private User owner;
+    @JoinColumn(name = "barco_id", nullable = false)
+    @JsonBackReference
+    private Barco barco;
+
 
     @OneToMany(mappedBy = "ship", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Equipment> equipment;
 
     @OneToMany(mappedBy = "ship", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Trip> trips;
 
     // Getters y Setters manuales
@@ -53,12 +59,17 @@ public class Ship {
     public int getNumberOfNets() { return numberOfNets; }
     public void setNumberOfNets(int numberOfNets) { this.numberOfNets = numberOfNets; }
 
-    public User getOwner() { return owner; }
-    public void setOwner(User owner) { this.owner = owner; }
-
     public List<Equipment> getEquipment() { return equipment; }
     public void setEquipment(List<Equipment> equipment) { this.equipment = equipment; }
 
     public List<Trip> getTrips() { return trips; }
     public void setTrips(List<Trip> trips) { this.trips = trips; }
+
+    public Barco getBarco() {
+        return barco;
+    }
+
+    public void setBarco(Barco barco) {
+        this.barco = barco;
+    }
 }

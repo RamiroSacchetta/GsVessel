@@ -1,7 +1,6 @@
 package com.example.GSVessel.Security;
 
 import com.example.GSVessel.Service.UserDetailService;
-import com.example.GSVessel.Security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -53,19 +52,26 @@ public class SecurityConfig {
                 .cors() // habilita CORS
                 .and()
                 .authorizeHttpRequests()
+                // Rutas públicas
                 .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/confirm").permitAll()
+                // Rutas solo ADMIN
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                // Rutas barcos → cualquier usuario autenticado
+                .requestMatchers("/api/barcos/**").authenticated()
+                // Cualquier otra ruta requiere autenticación
                 .anyRequest().authenticated()
                 .and()
+                // Stateless → no se usa sesión
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                // JWT filter antes del filtro de autenticación
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Bean de configuración de CORS
+    // Configuración de CORS
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();

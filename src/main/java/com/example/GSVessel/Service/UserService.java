@@ -122,7 +122,7 @@ public class UserService {
     }
 
     public boolean existsByEmail(String email) {
-        return userRepository.findByEmail(email).isPresent();
+        return userRepository.findByEmailIgnoreCase(email).isPresent();
     }
 
     private void sendConfirmationEmail(String to, String token) {
