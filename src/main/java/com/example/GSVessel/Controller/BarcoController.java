@@ -55,4 +55,5 @@ public class BarcoController {
     public List<Barco> getBarcosByUser(@PathVariable Long userId) {
         return barcoService.getBarcosByUser(userId);
     }
+
 }

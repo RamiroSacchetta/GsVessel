@@ -11,4 +11,5 @@ public interface CrewMemberRepository extends JpaRepository<CrewMember, Long> {
 
     // Obtener todos los tripulantes de un barco
     List<CrewMember> findByShipId(Long shipId);
+
 }

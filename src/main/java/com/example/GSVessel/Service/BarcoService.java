@@ -36,7 +36,7 @@ public class BarcoService {
                 .orElseThrow(() -> new EntityNotFoundException("Barco con id " + id + " no encontrado"));
     }
 
-    // Crear un barco asignándole un usuario dueño
+    // Crear un barco asignándole un usuario dueño (por ID)
     public Barco createBarco(Barco barco, Long userId) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario con id " + userId + " no encontrado"));
@@ -44,14 +44,13 @@ public class BarcoService {
         return barcoRepository.save(barco);
     }
 
-    // En BarcoService
+    // Crear un barco asignándole un usuario dueño (por email)
     public Barco createBarco(Barco barco, String email) {
         User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuario con email " + email + " no encontrado"));
         barco.setOwner(user);
         return barcoRepository.save(barco);
     }
-
 
     // Actualizar barco
     public Barco updateBarco(Long id, Barco updatedBarco) {
@@ -84,4 +83,3 @@ public class BarcoService {
         return barcos;
     }
 }
-

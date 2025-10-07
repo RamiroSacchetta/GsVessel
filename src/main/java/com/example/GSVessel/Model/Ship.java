@@ -11,14 +11,10 @@ public class Ship {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
     private String registration;
-    private int hoursUsed;
     private boolean active;
     private int crewSize;
-    private int cargoCrates;
-    private int numberOfNets;
 
     @ManyToOne
     @JoinColumn(name = "barco_id", nullable = false)
@@ -44,20 +40,11 @@ public class Ship {
     public String getRegistration() { return registration; }
     public void setRegistration(String registration) { this.registration = registration; }
 
-    public int getHoursUsed() { return hoursUsed; }
-    public void setHoursUsed(int hoursUsed) { this.hoursUsed = hoursUsed; }
-
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
 
     public int getCrewSize() { return crewSize; }
     public void setCrewSize(int crewSize) { this.crewSize = crewSize; }
-
-    public int getCargoCrates() { return cargoCrates; }
-    public void setCargoCrates(int cargoCrates) { this.cargoCrates = cargoCrates; }
-
-    public int getNumberOfNets() { return numberOfNets; }
-    public void setNumberOfNets(int numberOfNets) { this.numberOfNets = numberOfNets; }
 
     public List<Equipment> getEquipment() { return equipment; }
     public void setEquipment(List<Equipment> equipment) { this.equipment = equipment; }

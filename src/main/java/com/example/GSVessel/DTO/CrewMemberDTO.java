@@ -8,7 +8,8 @@ public class CrewMemberDTO {
     private String contact;
     private Long shipId;
 
-    public CrewMemberDTO() {}
+    public CrewMemberDTO() {
+    }
 
     public CrewMemberDTO(Long id, String name, String role, String contact, Long shipId) {
         this.id = id;
@@ -19,18 +20,44 @@ public class CrewMemberDTO {
     }
 
     // Getters y setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public String getName() {
+        return name;
+    }
 
-    public String getContact() { return contact; }
-    public void setContact(String contact) { this.contact = contact; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Long getShipId() { return shipId; }
-    public void setShipId(Long shipId) { this.shipId = shipId; }
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public Long getShipId() {
+        return shipId;
+    }
+
+    public void setShipId(Long shipId) {
+        this.shipId = shipId;
+    }
+
 }

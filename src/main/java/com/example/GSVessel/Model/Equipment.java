@@ -1,9 +1,8 @@
 package com.example.GSVessel.Model;
-import com.example.GSVessel.Model.Enums.EquipmentCategory;
 
+import com.example.GSVessel.Model.Enums.EquipmentCategory;
 import com.example.GSVessel.Model.Enums.EquipmentLocation;
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -49,8 +48,9 @@ public class Equipment {
     // Constructores
     public Equipment() {}
 
-    public Equipment(String name, EquipmentCategory category, EquipmentLocation location, Double consumption,
-                     int hoursUsed, Double budget, String description, String imageUrl, Ship ship) {
+    public Equipment(String name, EquipmentCategory category, EquipmentLocation location,
+                     Double consumption, int hoursUsed, Double budget,
+                     String description, String imageUrl, Ship ship) {
         this.name = name;
         this.category = category;
         this.location = location;
@@ -62,7 +62,7 @@ public class Equipment {
         this.ship = ship;
     }
 
-    // Getters y setters
+    // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -93,6 +93,10 @@ public class Equipment {
     public Ship getShip() { return ship; }
     public void setShip(Ship ship) { this.ship = ship; }
 
+    public List<Maintenance> getMantenimientos() { return mantenimientos; }
+    public void setMantenimientos(List<Maintenance> mantenimientos) { this.mantenimientos = mantenimientos; }
+
+    // equals y hashCode
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

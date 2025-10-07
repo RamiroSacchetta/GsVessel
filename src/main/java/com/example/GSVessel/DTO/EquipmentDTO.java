@@ -17,7 +17,8 @@ public class EquipmentDTO {
     private Long shipId;
     MultipartFile image;
 
-    public EquipmentDTO() {}
+    public EquipmentDTO() {
+    }
 
     public EquipmentDTO(Long id, String name, EquipmentCategory category, EquipmentLocation location,
                         Double consumption, int hoursUsed, Double budget, String description, Long shipId, MultipartFile image) {
@@ -35,33 +36,83 @@ public class EquipmentDTO {
     }
 
     // Getters y setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public EquipmentCategory getCategory() { return category; }
-    public void setCategory(EquipmentCategory category) { this.category = category; }
+    public String getName() {
+        return name;
+    }
 
-    public EquipmentLocation getLocation() { return location; }
-    public void setLocation(EquipmentLocation location) { this.location = location; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Double getConsumption() { return consumption; }
-    public void setConsumption(Double consumption) { this.consumption = consumption; }
+    public EquipmentCategory getCategory() {
+        return category;
+    }
 
-    public int getHoursUsed() { return hoursUsed; }
-    public void setHoursUsed(int hoursUsed) { this.hoursUsed = hoursUsed; }
+    public void setCategory(EquipmentCategory category) {
+        this.category = category;
+    }
 
-    public Double getBudget() { return budget; }
-    public void setBudget(Double budget) { this.budget = budget; }
+    public EquipmentLocation getLocation() {
+        return location;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setLocation(EquipmentLocation location) {
+        this.location = location;
+    }
 
-    public Long getShipId() { return shipId; }
-    public void setShipId(Long shipId) { this.shipId = shipId; }
+    public Double getConsumption() {
+        return consumption;
+    }
 
-    public MultipartFile getImage() { return image; }
-    public void setImage(MultipartFile image) { this.image = image; }
+    public void setConsumption(Double consumption) {
+        this.consumption = consumption;
+    }
+
+    public int getHoursUsed() {
+        return hoursUsed;
+    }
+
+    public void setHoursUsed(int hoursUsed) {
+        this.hoursUsed = hoursUsed;
+    }
+
+    public Double getBudget() {
+        return budget;
+    }
+
+    public void setBudget(Double budget) {
+        this.budget = budget;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Long getShipId() {
+        return shipId;
+    }
+
+    public void setShipId(Long shipId) {
+        this.shipId = shipId;
+    }
+
+    public MultipartFile getImage() {
+        return image;
+    }
+
+    public void setImage(MultipartFile image) {
+        this.image = image;
+    }
 }

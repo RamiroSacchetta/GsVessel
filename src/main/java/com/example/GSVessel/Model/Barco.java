@@ -39,8 +39,4 @@ public class Barco {
     @OneToMany(mappedBy = "barco", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Ship> ships;
-
-
-
-
 }

@@ -68,11 +68,8 @@ public class ShipService {
 
         if (shipDetails.getName() != null) existing.setName(shipDetails.getName());
         if (shipDetails.getRegistration() != null) existing.setRegistration(shipDetails.getRegistration());
-        existing.setHoursUsed(shipDetails.getHoursUsed());
         existing.setActive(shipDetails.isActive());
         existing.setCrewSize(shipDetails.getCrewSize());
-        existing.setCargoCrates(shipDetails.getCargoCrates());
-        existing.setNumberOfNets(shipDetails.getNumberOfNets());
 
         if (shipDetails.getBarco() != null) existing.setBarco(shipDetails.getBarco());
 
