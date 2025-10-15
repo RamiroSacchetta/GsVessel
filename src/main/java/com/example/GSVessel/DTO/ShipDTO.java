@@ -1,4 +1,5 @@
 package com.example.GSVessel.DTO;
+
 import lombok.*;
 
 @Data
@@ -7,10 +8,9 @@ import lombok.*;
 @Builder
 public class ShipDTO {
 
-    private Long id;
     private String name;
     private String registration;
     private boolean active;
     private int crewSize;
-    private Long ownerId;
+    private String barcoNombre; // el nombre del barco al que se asocia
 }

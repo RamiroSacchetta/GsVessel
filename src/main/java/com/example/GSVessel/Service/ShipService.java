@@ -1,5 +1,6 @@
 package com.example.GSVessel.Service;
 
+import com.example.GSVessel.DTO.ShipDTO;
 import com.example.GSVessel.Exception.BusinessException;
 import com.example.GSVessel.Exception.EntityNotFoundException;
 import com.example.GSVessel.Exception.ListNoContentException;
@@ -44,18 +45,18 @@ public class ShipService {
     }
 
     // Crear ship y asignarlo a un barco existente por nombre
-    public Ship createShip(Ship ship, String barcoNombre, String userEmail) {
+    public Ship createShip(ShipDTO shipDTO, String userEmail) {
         User user = userRepository.findByEmailIgnoreCase(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        Barco barco = barcoRepository.findByOwnerAndNombre(user, barcoNombre)
+        Barco barco = barcoRepository.findByOwnerAndNombre(user, shipDTO.getBarcoNombre())
                 .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con ese nombre"));
 
-        // Validar que el barco pertenece al usuario
-        if (!barco.getOwner().getId().equals(user.getId())) {
-            throw new BusinessException("El barco no pertenece al usuario logueado");
-        }
-
+        Ship ship = new Ship();
+        ship.setName(shipDTO.getName());
+        ship.setRegistration(shipDTO.getRegistration());
+        ship.setActive(shipDTO.isActive());
+        ship.setCrewSize(shipDTO.getCrewSize());
         ship.setBarco(barco);
 
         return shipRepository.save(ship);

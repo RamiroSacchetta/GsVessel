@@ -1,8 +1,11 @@
 package com.example.GSVessel.Controller;
 
+import com.example.GSVessel.DTO.ShipDTO;
 import com.example.GSVessel.Model.Ship;
 import com.example.GSVessel.Service.ShipService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -31,11 +34,12 @@ public class ShipController {
 
     // Crear ship enviando barcoNombre y userEmail como parámetros
     @PostMapping
-    public Ship createShip(@RequestBody Ship ship,
-                           @RequestParam String barcoNombre,
-                           @RequestParam String userEmail) {
-        return shipService.createShip(ship, barcoNombre, userEmail);
+    public Ship createShip(@RequestBody ShipDTO shipDTO,
+                           @AuthenticationPrincipal UserDetails userDetails) {
+        String userEmail = userDetails.getUsername();
+        return shipService.createShip(shipDTO, userEmail);
     }
+
 
     // Actualizar ship
     @PutMapping("/{id}")
