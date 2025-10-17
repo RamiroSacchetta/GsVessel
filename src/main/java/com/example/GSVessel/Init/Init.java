@@ -15,8 +15,6 @@ public class Init {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
-    private CorsConfigurationSource corsConfigurationSource;
 
     @PostConstruct
     public void inicializarUsuarios() {
@@ -24,7 +22,7 @@ public class Init {
             User user = new User();
             user.setEmail("valen6sacchetta@gmail.com");
             user.setUsername("valen");
-            user.setPassword("password");
+            user.setPassword(passwordEncoder.encode("password"));
             user.setRole(Role.ADMIN);
             user.setEnabled(true);
             userRepository.save(user);
