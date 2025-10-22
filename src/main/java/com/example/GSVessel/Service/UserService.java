@@ -28,6 +28,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
 
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -126,7 +127,7 @@ public class UserService {
     }
 
     private void sendConfirmationEmail(String to, String token) {
-        String confirmationUrl = "http://localhost:8080/api/auth/confirm?token=" + token;
+        String confirmationUrl = "http://localhost:4200/api/auth/confirm?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -135,4 +136,43 @@ public class UserService {
 
         mailSender.send(message);
     }
+    private void sendPasswordResetEmail(String to, String token) {
+        String resetUrl = "http://localhost:4200/reset-password?token=" + token;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Restablece tu contraseña en GSVessel");
+        message.setText("Hola,\n\nRecibimos una solicitud para restablecer tu contraseña. "
+                + "Haz clic en el siguiente enlace:\n" + resetUrl + "\n\n"
+                + "El enlace expira en 1 hora. Si no solicitaste este cambio, ignora este correo.");
+
+        mailSender.send(message);
+    }
+
+    @Transactional
+    public void requestPasswordReset(String email) {
+        userRepository.findByEmailIgnoreCase(email)
+                .ifPresent(user -> {
+                    String token = UUID.randomUUID().toString();
+                    user.setResetPasswordToken(token);
+                    user.setResetPasswordExpiresAt(LocalDateTime.now().plusHours(1)); // 1 hora de validez
+                    userRepository.save(user);
+
+                    sendPasswordResetEmail(user.getEmail(), token);
+                });
+        // Nota: si el email no existe, no hacemos nada → por seguridad
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByResetPasswordToken(token)
+                .filter(u -> u.getResetPasswordExpiresAt().isAfter(LocalDateTime.now()))
+                .orElseThrow(() -> new RuntimeException("Token inválido o expirado"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordExpiresAt(null);
+        userRepository.save(user);
+    }
+
 }

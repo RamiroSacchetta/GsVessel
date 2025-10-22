@@ -2,6 +2,8 @@ package com.example.GSVessel.Controller;
 
 import com.example.GSVessel.DTO.RegisterUserDTO;
 import com.example.GSVessel.DTO.UserLoginDTO;
+import com.example.GSVessel.DTO.ForgotPasswordRequestDTO;
+import com.example.GSVessel.DTO.ResetPasswordRequestDTO;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Service.UserService;
 import com.example.GSVessel.Security.JwtUtil;
@@ -13,6 +15,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -67,6 +71,21 @@ public class AuthController {
 
         } catch (AuthenticationException e) {
             return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
+        userService.requestPasswordReset(request.email());
+        return ResponseEntity.ok().build(); // siempre 200 por seguridad
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+        try {
+            userService.resetPassword(request.token(), request.newPassword());
+            return ResponseEntity.ok("Contraseña actualizada correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("El enlace ha expirado o es inválido");
         }
     }
 }
