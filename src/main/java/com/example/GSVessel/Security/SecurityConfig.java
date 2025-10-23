@@ -53,7 +53,11 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 // Rutas públicas
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/confirm").permitAll()
+                .requestMatchers("/api/auth/register",
+                        "/api/auth/login",
+                        "/api/auth/confirm",
+                        "/api/auth/forgot-password",
+                        "/api/auth/reset-password").permitAll()
                 // Rutas solo ADMIN
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 // Rutas barcos → cualquier usuario autenticado

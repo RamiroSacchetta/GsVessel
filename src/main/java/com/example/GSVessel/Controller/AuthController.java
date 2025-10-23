@@ -60,8 +60,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@Valid @RequestBody UserLoginDTO request) {
         try {
-            // Asegúrate de que el primer parámetro sea el "username" que espera Spring Security
-            // Si usas email como username, envía request.getEmail()
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );

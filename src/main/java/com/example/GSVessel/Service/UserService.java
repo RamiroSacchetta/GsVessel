@@ -15,8 +15,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -127,7 +130,7 @@ public class UserService {
     }
 
     private void sendConfirmationEmail(String to, String token) {
-        String confirmationUrl = "http://localhost:4200/api/auth/confirm?token=" + token;
+        String confirmationUrl = "http://localhost:8080/api/auth/confirm?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -137,42 +140,66 @@ public class UserService {
         mailSender.send(message);
     }
     private void sendPasswordResetEmail(String to, String token) {
-        String resetUrl = "http://localhost:4200/reset-password?token=" + token;
+        try {
+            // Codifica el token para evitar problemas con caracteres especiales
+            String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
+            String resetUrl = "http://localhost:4200/access/reset-password?token=" + encodedToken;
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Restablece tu contraseña en GSVessel");
-        message.setText("Hola,\n\nRecibimos una solicitud para restablecer tu contraseña. "
-                + "Haz clic en el siguiente enlace:\n" + resetUrl + "\n\n"
-                + "El enlace expira en 1 hora. Si no solicitaste este cambio, ignora este correo.");
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Restablece tu contraseña en GSVessel");
+            message.setText("Hola,\n\nRecibimos una solicitud para restablecer tu contraseña. "
+                    + "Haz clic en el siguiente enlace:\n" + resetUrl + "\n\n"
+                    + "El enlace expira en 1 hora. Si no solicitaste este cambio, ignora este correo.");
 
-        mailSender.send(message);
+            mailSender.send(message);
+            System.out.println("📧 Correo de restablecimiento enviado a: " + to);
+        } catch (Exception e) {
+            System.err.println("❌ Error al enviar correo de restablecimiento: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
-
     @Transactional
     public void requestPasswordReset(String email) {
-        userRepository.findByEmailIgnoreCase(email)
-                .ifPresent(user -> {
-                    String token = UUID.randomUUID().toString();
-                    user.setResetPasswordToken(token);
-                    user.setResetPasswordExpiresAt(LocalDateTime.now().plusHours(1)); // 1 hora de validez
-                    userRepository.save(user);
+        System.out.println("🔍 requestPasswordReset llamado con email: '" + email + "'");
 
-                    sendPasswordResetEmail(user.getEmail(), token);
-                });
-        // Nota: si el email no existe, no hacemos nada → por seguridad
+        String cleanEmail = email.trim().toLowerCase();
+        System.out.println("Email limpio: '" + cleanEmail + "'");
+
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(cleanEmail);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            System.out.println("✅ Usuario encontrado: " + user.getEmail());
+
+            String token = UUID.randomUUID().toString();
+            user.setResetPasswordToken(token);
+            user.setResetPasswordExpiresAt(LocalDateTime.now().plusHours(1));
+            userRepository.save(user);
+
+            sendPasswordResetEmail(user.getEmail(), token);
+            System.out.println("Correo de restablecimiento ENVIADO a: " + user.getEmail());
+        } else {
+            System.out.println("Usuario NO encontrado con email: " + cleanEmail);
+            // Por seguridad, no lanzamos error
+        }
     }
-
     @Transactional
     public void resetPassword(String token, String newPassword) {
+        System.out.println("🔍 resetPassword llamado con token: " + token);
+
         User user = userRepository.findByResetPasswordToken(token)
                 .filter(u -> u.getResetPasswordExpiresAt().isAfter(LocalDateTime.now()))
-                .orElseThrow(() -> new RuntimeException("Token inválido o expirado"));
+                .orElseThrow(() -> {
+                    System.out.println("❌ Token inválido o expirado: " + token);
+                    return new RuntimeException("Token inválido o expirado");
+                });
 
+        System.out.println("✅ Usuario encontrado: " + user.getEmail());
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetPasswordToken(null);
         user.setResetPasswordExpiresAt(null);
         userRepository.save(user);
+        System.out.println("✅ Contraseña actualizada para: " + user.getEmail());
     }
 
 }
