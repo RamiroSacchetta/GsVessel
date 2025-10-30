@@ -31,6 +31,9 @@ public class Barco {
 
     private Double calado; // Profundidad del barco
 
+    @Column(nullable = false)
+    private boolean activo = true;
+
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     @JsonBackReference
