@@ -2,17 +2,17 @@ package com.example.GSVessel.Mapper;
 
 import com.example.GSVessel.DTO.CrewMemberDTO;
 import com.example.GSVessel.Model.CrewMember;
-import com.example.GSVessel.Model.Ship;
+import com.example.GSVessel.Model.Trip;
 
 public class CrewMemberMapper {
 
-    public static CrewMember toEntity(CrewMemberDTO dto, Ship ship) {
+    public static CrewMember toEntity(CrewMemberDTO dto, Trip trip) {
         CrewMember crew = new CrewMember();
         crew.setId(dto.getId());
         crew.setName(dto.getName());
         crew.setRole(dto.getRole());
         crew.setContact(dto.getContact());
-        crew.setShip(ship);
+        crew.setTrip(trip);
         return crew;
     }
 
@@ -22,7 +22,7 @@ public class CrewMemberMapper {
                 crew.getName(),
                 crew.getRole(),
                 crew.getContact(),
-                crew.getShip() != null ? crew.getShip().getId() : null
+                crew.getTrip() != null ? crew.getTrip().getId() : null
         );
     }
 }

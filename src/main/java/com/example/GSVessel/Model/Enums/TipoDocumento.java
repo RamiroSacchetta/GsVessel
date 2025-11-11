@@ -1,0 +1,11 @@
+package com.example.GSVessel.Model.Enums;
+
+public enum TipoDocumento {
+    CERTIFICADO_MATRICULA,
+    SEGURO,
+    INSPECCION_TECNICA,
+    LIBRETA_MANTENIMIENTO,
+    CERTIFICADO_TRIPULANTE,
+    AUTORIZACION_NAVIGACION,
+    OTRO
+}

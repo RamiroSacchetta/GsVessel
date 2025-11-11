@@ -14,6 +14,7 @@ public class MaintenanceDTO {
     private TipoMaintenance tipoMaintenance;
     private MultipartFile image;      // Solo usado en entrada (subida)
     private String imageUrl;          // Solo usado en salida (URL de Cloudinary)
+    private Long equipmentId;
 
     // Constructor privado
     private MaintenanceDTO() {}
@@ -26,7 +27,7 @@ public class MaintenanceDTO {
     public TipoMaintenance getTipoMaintenance() { return tipoMaintenance; }
     public MultipartFile getImage() { return image; }
     public String getImageUrl() { return imageUrl; } // ← Nuevo getter
-
+    public Long  getEquipmentId() { return equipmentId; }
     // Builder estático
     public static MaintenanceDTOBuilder builder() {
         return new MaintenanceDTOBuilder();
@@ -40,6 +41,7 @@ public class MaintenanceDTO {
         private TipoMaintenance tipoMaintenance;
         private MultipartFile image;
         private String imageUrl; // ← Nuevo campo en el builder
+        private Long equipmentId;
 
         public MaintenanceDTOBuilder id(Long id) {
             this.id = id;
@@ -76,6 +78,11 @@ public class MaintenanceDTO {
             this.imageUrl = imageUrl;
             return this;
         }
+        public MaintenanceDTOBuilder equipmentId(Long equipmentId) {
+            this.equipmentId = equipmentId;
+            return this;
+        }
+
 
         public MaintenanceDTO build() {
             MaintenanceDTO dto = new MaintenanceDTO();
@@ -86,6 +93,7 @@ public class MaintenanceDTO {
             dto.tipoMaintenance = this.tipoMaintenance;
             dto.image = this.image;
             dto.imageUrl = this.imageUrl;
+            dto.equipmentId = this.equipmentId;
             return dto;
         }
     }

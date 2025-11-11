@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface CrewMemberRepository extends JpaRepository<CrewMember, Long> {
 
-    // Obtener todos los tripulantes de un barco
-    List<CrewMember> findByShipId(Long shipId);
+    // Obtener todos los tripulantes de un viaje
+    List<CrewMember> findByTripId(Long tripId);
 
 }

@@ -6,17 +6,17 @@ public class CrewMemberDTO {
     private String name;
     private String role;
     private String contact;
-    private Long shipId;
+    private Long tripId;
 
     public CrewMemberDTO() {
     }
 
-    public CrewMemberDTO(Long id, String name, String role, String contact, Long shipId) {
+    public CrewMemberDTO(Long id, String name, String role, String contact, Long tripId) {
         this.id = id;
         this.name = name;
         this.role = role;
         this.contact = contact;
-        this.shipId = shipId;
+        this.tripId = tripId;
     }
 
     // Getters y setters
@@ -52,12 +52,12 @@ public class CrewMemberDTO {
         this.contact = contact;
     }
 
-    public Long getShipId() {
-        return shipId;
+    public Long getTripId() {
+        return tripId;
     }
 
-    public void setShipId(Long shipId) {
-        this.shipId = shipId;
+    public void setTripId(Long tripId) {
+        this.tripId = tripId;
     }
 
 }

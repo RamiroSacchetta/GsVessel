@@ -4,9 +4,9 @@ import com.example.GSVessel.DTO.CrewMemberDTO;
 import com.example.GSVessel.Exception.EntityNotFoundException;
 import com.example.GSVessel.Exception.ListNoContentException;
 import com.example.GSVessel.Model.CrewMember;
-import com.example.GSVessel.Model.Ship;
+import com.example.GSVessel.Model.Trip;
 import com.example.GSVessel.Repository.CrewMemberRepository;
-import com.example.GSVessel.Repository.ShipRepository;
+import com.example.GSVessel.Repository.TripRepository;
 import com.example.GSVessel.Mapper.CrewMemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,13 +21,13 @@ public class CrewMemberService {
     private CrewMemberRepository crewMemberRepository;
 
     @Autowired
-    private ShipRepository shipRepository;
+    private TripRepository tripRepository;
 
     // Crear tripulante
     public CrewMemberDTO create(CrewMemberDTO dto) {
-        Ship ship = shipRepository.findById(dto.getShipId())
-                .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + dto.getShipId()));
-        CrewMember crew = CrewMemberMapper.toEntity(dto, ship);
+        Trip trip = tripRepository.findById(dto.getTripId())
+                .orElseThrow(() -> new EntityNotFoundException("Viaje no encontrado con id: " + dto.getTripId()));
+        CrewMember crew = CrewMemberMapper.toEntity(dto, trip);
         CrewMember saved = crewMemberRepository.save(crew);
         return CrewMemberMapper.toDTO(saved);
     }
@@ -50,11 +50,11 @@ public class CrewMemberService {
         return CrewMemberMapper.toDTO(crew);
     }
 
-    // Buscar tripulantes por barco
-    public List<CrewMemberDTO> findByShipId(Long shipId) {
-        List<CrewMember> crewList = crewMemberRepository.findByShipId(shipId);
+    // Buscar tripulantes por viaje (nuevo)
+    public List<CrewMemberDTO> findByTripId(Long tripId) {
+        List<CrewMember> crewList = crewMemberRepository.findByTripId(tripId);
         if (crewList.isEmpty()) {
-            throw new ListNoContentException("No se encontraron tripulantes para el barco con id: " + shipId);
+            throw new ListNoContentException("No se encontraron tripulantes para el viaje con id: " + tripId);
         }
         return crewList.stream()
                 .map(CrewMemberMapper::toDTO)
@@ -69,10 +69,10 @@ public class CrewMemberService {
         if (dto.getName() != null) existing.setName(dto.getName());
         if (dto.getRole() != null) existing.setRole(dto.getRole());
         if (dto.getContact() != null) existing.setContact(dto.getContact());
-        if (dto.getShipId() != null) {
-            Ship ship = shipRepository.findById(dto.getShipId())
-                    .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + dto.getShipId()));
-            existing.setShip(ship);
+        if (dto.getTripId() != null) {
+            Trip trip = tripRepository.findById(dto.getTripId())
+                    .orElseThrow(() -> new EntityNotFoundException("Viaje no encontrado con id: " + dto.getTripId()));
+            existing.setTrip(trip);
         }
 
         CrewMember updated = crewMemberRepository.save(existing);

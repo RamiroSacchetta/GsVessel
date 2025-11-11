@@ -17,6 +17,7 @@ public class EquipmentDTO {
     private Long shipId;
     MultipartFile image;
 
+
     public EquipmentDTO() {
     }
 

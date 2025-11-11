@@ -30,9 +30,9 @@ public class CrewMemberController {
         return ResponseEntity.ok(crewMemberService.findById(id));
     }
 
-    @GetMapping("/ship/{shipId}")
-    public ResponseEntity<List<CrewMemberDTO>> getByShip(@PathVariable Long shipId) {
-        return ResponseEntity.ok(crewMemberService.findByShipId(shipId));
+    @GetMapping("/trip/{tripId}")
+    public ResponseEntity<List<CrewMemberDTO>> getByTrip(@PathVariable Long tripId) {
+        return ResponseEntity.ok(crewMemberService.findByTripId(tripId));
     }
 
     @PutMapping("/{id}")

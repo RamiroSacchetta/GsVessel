@@ -16,8 +16,8 @@ public class CrewMember {
     private String contact;
 
     @ManyToOne
-    @JoinColumn(name = "ship_id")
-    private Ship ship;
+    @JoinColumn(name = "trip_id")
+    private Trip trip;
 
     // Getters y setters
     public Long getId() { return id; }
@@ -32,6 +32,6 @@ public class CrewMember {
     public String getContact() { return contact; }
     public void setContact(String contact) { this.contact = contact; }
 
-    public Ship getShip() { return ship; }
-    public void setShip(Ship ship) { this.ship = ship; }
+    public Ship getTrip() { return trip; }
+    public void setTrip(Trip trip) { this.trip = trip; }
 }
