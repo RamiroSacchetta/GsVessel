@@ -18,7 +18,7 @@ public class DocumentoDTO {
     // Campos para asociar
     private Long barcoId;
     private Long equipmentId;
-    private Long tripulanteId;
+    private Long crewMemberId;
     private Long mantenimientoId;
 
     // Solo para subida
@@ -52,8 +52,13 @@ public class DocumentoDTO {
     public Long getEquipmentId() { return equipmentId; }
     public void setEquipmentId(Long equipmentId) { this.equipmentId = equipmentId; }
 
-    public Long getTripulanteId() { return tripulanteId; }
-    public void setTripulanteId(Long tripulanteId) { this.tripulanteId = tripulanteId; }
+    public Long getCrewMemberId() {
+        return crewMemberId;
+    }
+
+    public void setCrewMemberId(Long crewMemberId) {
+        this.crewMemberId = crewMemberId;
+    }
 
     public Long getMantenimientoId() { return mantenimientoId; }
     public void setMantenimientoId(Long mantenimientoId) { this.mantenimientoId = mantenimientoId; }

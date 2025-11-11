@@ -1,5 +1,6 @@
 package com.example.GSVessel.Model;
 
+import com.example.GSVessel.Model.Enums.TipoDocumento;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -44,8 +45,8 @@ public class Documento {
     private Equipment equipment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tripulante_id")
-    private Tripulante tripulante;
+    @JoinColumn(name = "crew_member_id")
+    private CrewMember crewMember;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mantenimiento_id")

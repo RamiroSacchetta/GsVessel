@@ -10,9 +10,7 @@ public class CrewMember {
     private Long id;
 
     private String name;
-
     private String role;
-
     private String contact;
 
     @ManyToOne
@@ -32,6 +30,6 @@ public class CrewMember {
     public String getContact() { return contact; }
     public void setContact(String contact) { this.contact = contact; }
 
-    public Ship getTrip() { return trip; }
+    public Trip getTrip() { return trip; }
     public void setTrip(Trip trip) { this.trip = trip; }
 }

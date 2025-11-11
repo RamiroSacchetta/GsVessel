@@ -1,5 +1,6 @@
 package com.example.GSVessel.Repository;
 
+import com.example.GSVessel.Model.CrewMember;
 import com.example.GSVessel.Model.Documento;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +14,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Long> {
 
     List<Documento> findByBarcoIdOrderByFechaExpiracionAsc(Long barcoId);
     List<Documento> findByEquipmentIdOrderByFechaExpiracionAsc(Long equipmentId);
-    List<Documento> findByTripulanteIdOrderByFechaExpiracionAsc(Long tripulanteId);
+    List<Documento> findByCrewMemberIdOrderByFechaExpiracionAsc(Long crewMemberId);
     List<Documento> findByMantenimientoIdOrderByFechaExpiracionAsc(Long mantenimientoId);
 
     // Buscar todos ordenados por fecha de expiración (más próximo a más lejano)

@@ -6,12 +6,10 @@ import com.example.GSVessel.DTO.DocumentoDTO;
 import com.example.GSVessel.Exception.EntityNotFoundException;
 import com.example.GSVessel.Model.*;
 import com.example.GSVessel.Model.Enums.TipoDocumento;
-import com.example.GSVessel.Repository.DocumentoRepository;
-import com.example.GSVessel.Repository.EquipmentRepository;
-import com.example.GSVessel.Repository.MaintenanceRepository;
-import com.example.GSVessel.Repository.ShipRepository;
+import com.example.GSVessel.Repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.example.GSVessel.Repository.CrewMemberRepository;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -25,7 +23,7 @@ public class DocumentoService {
     private final DocumentoRepository documentoRepository;
     private final ShipRepository shipRepository;
     private final EquipmentRepository equipmentRepository;
-    private final TripulanteRepository tripulanteRepository;
+    private final CrewMemberRepository crewMemberRepository;
     private final MaintenanceRepository maintenanceRepository;
     private final Cloudinary cloudinary;
 
@@ -33,13 +31,13 @@ public class DocumentoService {
             DocumentoRepository documentoRepository,
             ShipRepository shipRepository,
             EquipmentRepository equipmentRepository,
-            TripulanteRepository tripulanteRepository,
+            CrewMemberRepository crewMemberRepository,
             MaintenanceRepository maintenanceRepository,
             Cloudinary cloudinary) {
         this.documentoRepository = documentoRepository;
         this.shipRepository = shipRepository;
         this.equipmentRepository = equipmentRepository;
-        this.tripulanteRepository = tripulanteRepository;
+        this.crewMemberRepository = crewMemberRepository;
         this.maintenanceRepository = maintenanceRepository;
         this.cloudinary = cloudinary;
     }
@@ -57,7 +55,7 @@ public class DocumentoService {
     public DocumentoDTO convertToDTO(Documento documento) {
         Long barcoId = documento.getBarco() != null ? documento.getBarco().getId() : null;
         Long equipmentId = documento.getEquipment() != null ? documento.getEquipment().getId() : null;
-        Long tripulanteId = documento.getTripulante() != null ? documento.getTripulante().getId() : null;
+        Long crewMemberId = documento.getCrewMember() != null ? documento.getCrewMember().getId() : null;
         Long mantenimientoId = documento.getMantenimiento() != null ? documento.getMantenimiento().getId() : null;
 
         DocumentoDTO dto = new DocumentoDTO();
@@ -70,7 +68,7 @@ public class DocumentoService {
         dto.setFechaSubida(documento.getFechaSubida());
         dto.setBarcoId(barcoId);
         dto.setEquipmentId(equipmentId);
-        dto.setTripulanteId(tripulanteId);
+        dto.setCrewMemberId(crewMemberId);
         dto.setMantenimientoId(mantenimientoId);
         return dto;
     }
@@ -100,10 +98,10 @@ public class DocumentoService {
                     .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado"));
             documento.setEquipment(equipo);
         }
-        if (dto.getTripulanteId() != null) {
-            Tripulante tripulante = tripulanteRepository.findById(dto.getTripulanteId())
+        if (dto.getCrewMemberId() != null) {
+            CrewMember crewMember = crewMemberRepository.findById(dto.getCrewMemberId())
                     .orElseThrow(() -> new EntityNotFoundException("Tripulante no encontrado"));
-            documento.setTripulante(tripulante);
+            documento.setCrewMember(crewMember);
         }
         if (dto.getMantenimientoId() != null) {
             Maintenance mantenimiento = maintenanceRepository.findById(dto.getMantenimientoId())
@@ -133,8 +131,8 @@ public class DocumentoService {
                 .collect(Collectors.toList());
     }
 
-    public List<DocumentoDTO> getDocumentosPorTripulante(Long tripulanteId) {
-        return documentoRepository.findByTripulanteIdOrderByFechaExpiracionAsc(tripulanteId).stream()
+    public List<DocumentoDTO> getDocumentosPorTripulante(Long crewMemberId) {
+        return documentoRepository.findByCrewMemberIdOrderByFechaExpiracionAsc(crewMemberId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
