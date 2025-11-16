@@ -15,6 +15,8 @@ public class MaintenanceDTO {
     private MultipartFile image;      // Solo usado en entrada (subida)
     private String imageUrl;          // Solo usado en salida (URL de Cloudinary)
     private Long equipmentId;
+    private String equipmentName; // Nuevo campo para el nombre del equipo
+    private String taller; // Nuevo campo taller
 
     // Constructor privado
     private MaintenanceDTO() {}
@@ -26,8 +28,15 @@ public class MaintenanceDTO {
     public String getDescripcion() { return descripcion; }
     public TipoMaintenance getTipoMaintenance() { return tipoMaintenance; }
     public MultipartFile getImage() { return image; }
-    public String getImageUrl() { return imageUrl; } // ← Nuevo getter
-    public Long  getEquipmentId() { return equipmentId; }
+    public String getImageUrl() { return imageUrl; }
+    public Long getEquipmentId() { return equipmentId; }
+    public String getEquipmentName() { return equipmentName; } // Nuevo getter
+    public String getTaller() { return taller; } // Nuevo getter
+
+    // Setters (necesarios para asignar desde el service)
+    public void setEquipmentName(String equipmentName) { this.equipmentName = equipmentName; } // Nuevo setter
+    public void setTaller(String taller) { this.taller = taller; } // Nuevo setter (aunque no lo uses ahora, es buena práctica tenerlo)
+
     // Builder estático
     public static MaintenanceDTOBuilder builder() {
         return new MaintenanceDTOBuilder();
@@ -40,8 +49,10 @@ public class MaintenanceDTO {
         private String descripcion;
         private TipoMaintenance tipoMaintenance;
         private MultipartFile image;
-        private String imageUrl; // ← Nuevo campo en el builder
+        private String imageUrl;
         private Long equipmentId;
+        private String equipmentName; // Nuevo campo en el builder
+        private String taller; // Nuevo campo en el builder
 
         public MaintenanceDTOBuilder id(Long id) {
             this.id = id;
@@ -73,16 +84,25 @@ public class MaintenanceDTO {
             return this;
         }
 
-        // Nuevo método en el builder
         public MaintenanceDTOBuilder imageUrl(String imageUrl) {
             this.imageUrl = imageUrl;
             return this;
         }
+
         public MaintenanceDTOBuilder equipmentId(Long equipmentId) {
             this.equipmentId = equipmentId;
             return this;
         }
 
+        public MaintenanceDTOBuilder equipmentName(String equipmentName) {
+            this.equipmentName = equipmentName;
+            return this;
+        }
+
+        public MaintenanceDTOBuilder taller(String taller) {
+            this.taller = taller;
+            return this;
+        }
 
         public MaintenanceDTO build() {
             MaintenanceDTO dto = new MaintenanceDTO();
@@ -94,6 +114,8 @@ public class MaintenanceDTO {
             dto.image = this.image;
             dto.imageUrl = this.imageUrl;
             dto.equipmentId = this.equipmentId;
+            dto.equipmentName = this.equipmentName;
+            dto.taller = this.taller; // Nuevo campo
             return dto;
         }
     }

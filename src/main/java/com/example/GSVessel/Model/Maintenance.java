@@ -39,5 +39,10 @@ public class Maintenance {
     @JoinColumn(name = "equipment_id", nullable = false)
     private Equipment equipment;
 
+    @Column(name = "taller")
+    private String taller;
+
+
+
     private String imageUrl;
 }

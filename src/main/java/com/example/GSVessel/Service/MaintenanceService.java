@@ -8,7 +8,9 @@ import com.example.GSVessel.Exception.EntityNotFoundException;
 import com.example.GSVessel.Exception.ListNoContentException;
 import com.example.GSVessel.Model.Enums.TipoMaintenance;
 import com.example.GSVessel.Model.Maintenance;
+import com.example.GSVessel.Model.Equipment;
 import com.example.GSVessel.Repository.MaintenanceRepository;
+import com.example.GSVessel.Repository.EquipmentRepository;
 import com.example.GSVessel.Mapper.MaintenanceMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,10 +24,12 @@ import java.util.stream.Collectors;
 public class MaintenanceService {
 
     private final MaintenanceRepository maintenanceRepository;
+    private final EquipmentRepository equipmentRepository;
     private final Cloudinary cloudinary;
 
-    public MaintenanceService(MaintenanceRepository maintenanceRepository, Cloudinary cloudinary) {
+    public MaintenanceService(MaintenanceRepository maintenanceRepository, EquipmentRepository equipmentRepository, Cloudinary cloudinary) {
         this.maintenanceRepository = maintenanceRepository;
+        this.equipmentRepository = equipmentRepository;
         this.cloudinary = cloudinary;
     }
 
@@ -46,18 +50,23 @@ public class MaintenanceService {
     public MaintenanceDTO create(MaintenanceDTO dto) {
         validateForCreate(dto);
 
+        Equipment equipment = equipmentRepository.findById(dto.getEquipmentId())
+                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + dto.getEquipmentId()));
+
         Maintenance maintenance = new Maintenance();
         maintenance.setFecha(dto.getFecha());
-        maintenance.setCosto(dto.getCosto());
+        maintenance.setCosto(dto.getCosto()); // Ahora puede ser null
         maintenance.setDescripcion(dto.getDescripcion());
         maintenance.setTipoMaintenance(dto.getTipoMaintenance());
+        maintenance.setEquipment(equipment);
+        // Nuevo campo
+        maintenance.setTaller(dto.getTaller());
 
-        // Subir imagen si existe y guardar la URL
         String imageUrl = uploadImage(dto.getImage());
         maintenance.setImageUrl(imageUrl);
 
         Maintenance saved = maintenanceRepository.save(maintenance);
-        return MaintenanceMapper.toDTO(saved);
+        return toDTOWithEquipmentName(saved); // Usamos el nuevo método aquí también
     }
 
     // Actualizar mantenimiento
@@ -65,21 +74,30 @@ public class MaintenanceService {
         Maintenance existing = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mantenimiento no encontrado con id: " + id));
 
-        // Actualizar campos simples
+        // Actualizar campos simples si no son null
         if (dto.getFecha() != null) existing.setFecha(dto.getFecha());
         if (dto.getCosto() != null) existing.setCosto(dto.getCosto());
         if (dto.getDescripcion() != null) existing.setDescripcion(dto.getDescripcion());
         if (dto.getTipoMaintenance() != null) existing.setTipoMaintenance(dto.getTipoMaintenance());
+
+        // Actualizar equipo si se envió un nuevo ID
+        if (dto.getEquipmentId() != null) {
+            Equipment equipment = equipmentRepository.findById(dto.getEquipmentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + dto.getEquipmentId()));
+            existing.setEquipment(equipment);
+        }
+
+        // Nuevo campo
+        if (dto.getTaller() != null) existing.setTaller(dto.getTaller());
 
         // Si se envía una nueva imagen, reemplazar la URL
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
             String newImageUrl = uploadImage(dto.getImage());
             existing.setImageUrl(newImageUrl);
         }
-        // Si no hay imagen nueva, mantenemos la URL actual (no la borramos)
 
         Maintenance updated = maintenanceRepository.save(existing);
-        return MaintenanceMapper.toDTO(updated);
+        return toDTOWithEquipmentName(updated); // Usamos el nuevo método aquí también
     }
 
     // Validaciones para creación
@@ -87,11 +105,11 @@ public class MaintenanceService {
         if (dto.getFecha() == null) {
             throw new BusinessException("La fecha es obligatoria");
         }
-        if (dto.getCosto() == null) {
-            throw new BusinessException("El costo es obligatorio");
-        }
         if (dto.getTipoMaintenance() == null) {
             throw new BusinessException("El tipo de mantenimiento es obligatorio");
+        }
+        if (dto.getEquipmentId() == null) {
+            throw new BusinessException("El ID del equipo es obligatorio");
         }
     }
 
@@ -102,7 +120,7 @@ public class MaintenanceService {
             throw new ListNoContentException("No se encontraron mantenimientos");
         }
         return list.stream()
-                .map(MaintenanceMapper::toDTO)
+                .map(this::toDTOWithEquipmentName) // Cambiamos a nuestro nuevo método
                 .collect(Collectors.toList());
     }
 
@@ -110,7 +128,7 @@ public class MaintenanceService {
     public MaintenanceDTO findById(Long id) {
         Maintenance maintenance = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mantenimiento no encontrado con id: " + id));
-        return MaintenanceMapper.toDTO(maintenance);
+        return toDTOWithEquipmentName(maintenance); // Cambiamos a nuestro nuevo método
     }
 
     // Buscar mantenimientos por tipo
@@ -120,7 +138,7 @@ public class MaintenanceService {
             throw new ListNoContentException("No hay mantenimientos de tipo: " + tipo);
         }
         return list.stream()
-                .map(MaintenanceMapper::toDTO)
+                .map(this::toDTOWithEquipmentName) // Cambiamos a nuestro nuevo método
                 .collect(Collectors.toList());
     }
 
@@ -128,7 +146,17 @@ public class MaintenanceService {
     public void delete(Long id) {
         Maintenance maintenance = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mantenimiento no encontrado con id: " + id));
-        // Opcional: eliminar imagen de Cloudinary (requiere public_id)
         maintenanceRepository.delete(maintenance);
+    }
+
+    // Nuevo método para convertir a DTO con nombre de equipo
+    private MaintenanceDTO toDTOWithEquipmentName(Maintenance maintenance) {
+        // Usamos el mapper para los campos básicos
+        MaintenanceDTO dto = MaintenanceMapper.toDTO(maintenance);
+        // Asignamos el nombre del equipo
+        if (maintenance.getEquipment() != null) {
+            dto.setEquipmentName(maintenance.getEquipment().getName());
+        }
+        return dto;
     }
 }
