@@ -8,7 +8,6 @@ public class MaintenanceMapper {
     public static MaintenanceDTO toDTO(Maintenance maintenance) {
         if (maintenance == null) return null;
 
-        // Manejo seguro de equipment
         String equipmentName = null;
         if (maintenance.getEquipment() != null) {
             equipmentName = maintenance.getEquipment().getName();
@@ -22,7 +21,7 @@ public class MaintenanceMapper {
                 .taller(maintenance.getTaller())
                 .tipoMaintenance(maintenance.getTipoMaintenance())
                 .imageUrl(maintenance.getImageUrl())
-                .equipmentName(equipmentName) // Asignamos el nombre o null si no hay equipo
+                .equipmentName(equipmentName)
                 .build();
     }
 }
