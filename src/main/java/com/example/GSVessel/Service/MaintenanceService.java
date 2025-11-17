@@ -33,16 +33,14 @@ public class MaintenanceService {
         this.cloudinary = cloudinary;
     }
 
-    // Método privado para subir imagen a Cloudinary
+    // Subir imagen a Cloudinary (opcional)
     private String uploadImage(MultipartFile image) {
-        if (image == null || image.isEmpty()) {
-            return null;
-        }
+        if (image == null || image.isEmpty()) return null;
         try {
             Map<?, ?> uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
             return (String) uploadResult.get("url");
         } catch (IOException e) {
-            throw new RuntimeException("Error al subir la imagen a Cloudinary: " + e.getMessage(), e);
+            throw new RuntimeException("Error al subir imagen a Cloudinary: " + e.getMessage(), e);
         }
     }
 
@@ -55,18 +53,17 @@ public class MaintenanceService {
 
         Maintenance maintenance = new Maintenance();
         maintenance.setFecha(dto.getFecha());
-        maintenance.setCosto(dto.getCosto()); // Ahora puede ser null
+        maintenance.setCosto(dto.getCosto()); // ahora opcional
         maintenance.setDescripcion(dto.getDescripcion());
         maintenance.setTipoMaintenance(dto.getTipoMaintenance());
         maintenance.setEquipment(equipment);
-        // Nuevo campo
         maintenance.setTaller(dto.getTaller());
 
         String imageUrl = uploadImage(dto.getImage());
         maintenance.setImageUrl(imageUrl);
 
         Maintenance saved = maintenanceRepository.save(maintenance);
-        return toDTOWithEquipmentName(saved); // Usamos el nuevo método aquí también
+        return toDTOWithEquipmentName(saved);
     }
 
     // Actualizar mantenimiento
@@ -74,86 +71,59 @@ public class MaintenanceService {
         Maintenance existing = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mantenimiento no encontrado con id: " + id));
 
-        // Actualizar campos simples si no son null
         if (dto.getFecha() != null) existing.setFecha(dto.getFecha());
-        if (dto.getCosto() != null) existing.setCosto(dto.getCosto());
+        if (dto.getCosto() != null) existing.setCosto(dto.getCosto()); // opcional
         if (dto.getDescripcion() != null) existing.setDescripcion(dto.getDescripcion());
         if (dto.getTipoMaintenance() != null) existing.setTipoMaintenance(dto.getTipoMaintenance());
 
-        // Actualizar equipo si se envió un nuevo ID
         if (dto.getEquipmentId() != null) {
             Equipment equipment = equipmentRepository.findById(dto.getEquipmentId())
                     .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + dto.getEquipmentId()));
             existing.setEquipment(equipment);
         }
 
-        // Nuevo campo
         if (dto.getTaller() != null) existing.setTaller(dto.getTaller());
 
-        // Si se envía una nueva imagen, reemplazar la URL
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
-            String newImageUrl = uploadImage(dto.getImage());
-            existing.setImageUrl(newImageUrl);
+            existing.setImageUrl(uploadImage(dto.getImage()));
         }
 
         Maintenance updated = maintenanceRepository.save(existing);
-        return toDTOWithEquipmentName(updated); // Usamos el nuevo método aquí también
+        return toDTOWithEquipmentName(updated);
     }
 
-    // Validaciones para creación
     private void validateForCreate(MaintenanceDTO dto) {
-        if (dto.getFecha() == null) {
-            throw new BusinessException("La fecha es obligatoria");
-        }
-        if (dto.getTipoMaintenance() == null) {
-            throw new BusinessException("El tipo de mantenimiento es obligatorio");
-        }
-        if (dto.getEquipmentId() == null) {
-            throw new BusinessException("El ID del equipo es obligatorio");
-        }
+        if (dto.getFecha() == null) throw new BusinessException("La fecha es obligatoria");
+        if (dto.getTipoMaintenance() == null) throw new BusinessException("El tipo de mantenimiento es obligatorio");
+        if (dto.getEquipmentId() == null) throw new BusinessException("El ID del equipo es obligatorio");
     }
 
-    // Listar todos los mantenimientos
     public List<MaintenanceDTO> findAll() {
         List<Maintenance> list = maintenanceRepository.findAll();
-        if (list.isEmpty()) {
-            throw new ListNoContentException("No se encontraron mantenimientos");
-        }
-        return list.stream()
-                .map(this::toDTOWithEquipmentName) // Cambiamos a nuestro nuevo método
-                .collect(Collectors.toList());
+        if (list.isEmpty()) throw new ListNoContentException("No se encontraron mantenimientos");
+        return list.stream().map(this::toDTOWithEquipmentName).collect(Collectors.toList());
     }
 
-    // Buscar mantenimiento por id
     public MaintenanceDTO findById(Long id) {
         Maintenance maintenance = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mantenimiento no encontrado con id: " + id));
-        return toDTOWithEquipmentName(maintenance); // Cambiamos a nuestro nuevo método
+        return toDTOWithEquipmentName(maintenance);
     }
 
-    // Buscar mantenimientos por tipo
     public List<MaintenanceDTO> findByTipo(TipoMaintenance tipo) {
         List<Maintenance> list = maintenanceRepository.findByTipoMaintenance(tipo);
-        if (list.isEmpty()) {
-            throw new ListNoContentException("No hay mantenimientos de tipo: " + tipo);
-        }
-        return list.stream()
-                .map(this::toDTOWithEquipmentName) // Cambiamos a nuestro nuevo método
-                .collect(Collectors.toList());
+        if (list.isEmpty()) throw new ListNoContentException("No hay mantenimientos de tipo: " + tipo);
+        return list.stream().map(this::toDTOWithEquipmentName).collect(Collectors.toList());
     }
 
-    // Eliminar mantenimiento
     public void delete(Long id) {
         Maintenance maintenance = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mantenimiento no encontrado con id: " + id));
         maintenanceRepository.delete(maintenance);
     }
 
-    // Nuevo método para convertir a DTO con nombre de equipo
     private MaintenanceDTO toDTOWithEquipmentName(Maintenance maintenance) {
-        // Usamos el mapper para los campos básicos
         MaintenanceDTO dto = MaintenanceMapper.toDTO(maintenance);
-        // Asignamos el nombre del equipo
         if (maintenance.getEquipment() != null) {
             dto.setEquipmentName(maintenance.getEquipment().getName());
         }

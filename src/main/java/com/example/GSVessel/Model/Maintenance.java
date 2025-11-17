@@ -24,7 +24,6 @@ public class Maintenance {
     @NotNull(message = "La fecha es obligatoria")
     private LocalDate fecha;
 
-    @NotNull(message = "Es obligatorio ingresar el costo")
     @Column(precision = 10, scale = 2)
     private BigDecimal costo;
 
