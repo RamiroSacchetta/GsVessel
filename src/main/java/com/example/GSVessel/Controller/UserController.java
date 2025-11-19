@@ -1,5 +1,6 @@
 package com.example.GSVessel.Controller;
 
+import com.example.GSVessel.DTO.UpdateUserDTO;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.DTO.RegisterUserDTO;
 import com.example.GSVessel.DTO.UserDTO;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,15 +68,22 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    // Actualizar usuario
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
-        User updatedUser = userService.updateUser(id, user);
-        UserDTO dto = new UserDTO(updatedUser.getId(), updatedUser.getUsername(),
-                updatedUser.getEmail(), updatedUser.getRole());
-        return ResponseEntity.ok(dto);
-    }
+    public ResponseEntity<UserDTO> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserDTO dto) {
 
+        User updatedUser = userService.updateUser(id, dto);
+
+        UserDTO response = new UserDTO(
+                updatedUser.getId(),
+                updatedUser.getUsername(),
+                updatedUser.getEmail(),
+                updatedUser.getRole()
+        );
+
+        return ResponseEntity.ok(response);
+    }
     // Eliminar usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
@@ -92,4 +101,15 @@ public class UserController {
                 .collect(Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
+    @GetMapping("/miPerfil")
+    public ResponseEntity<UserDTO> miPerfil(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String loginName = authentication.getName();
+        return ResponseEntity.ok(userService.getUserByLoginName(loginName));
+
+    }
+
 }

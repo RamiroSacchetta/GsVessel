@@ -11,20 +11,10 @@ public class TripDTO {
     private Long id;
     private LocalDate departureDate;
     private LocalDate returnDate;
-    private Double foodExpense;
-    private Double shacklesExpense;
-    private Double cablesExpense;
+
     private Double otherExpenses;
-    private Double combustible;
-    private Double aceite;
-    private Double filtros;
 
-    private int combustibleUsed;
-    private int aceiteUsed;
-    private int filtrosUsed;
 
-    private int shacklesUsed;
-    private int cargoUsed;
     private Long shipId; // Solo el ID del barco en el DTO
 }
 

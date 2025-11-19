@@ -1,5 +1,7 @@
 package com.example.GSVessel.Service;
 
+import com.example.GSVessel.DTO.UpdateUserDTO;
+import com.example.GSVessel.DTO.UserDTO;
 import com.example.GSVessel.Exception.UsernameDuplicate;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Model.VerificationToken;
@@ -86,31 +88,11 @@ public class UserService {
         return "Cuenta confirmada con éxito. Ahora puedes iniciar sesión.";
     }
 
-    @Transactional
-    public User updateUser(Long id, User userDetails) {
+    public User updateUser(Long id, UpdateUserDTO dto) {
         User user = getUserById(id);
 
-        if (!user.getUsername().equals(userDetails.getUsername())) {
-            if (existsByUsername(userDetails.getUsername())) {
-                throw new UsernameDuplicate("username", userDetails.getUsername());
-            }
-            user.setUsername(userDetails.getUsername());
-        }
-
-        if (!user.getEmail().equals(userDetails.getEmail())) {
-            if (existsByEmail(userDetails.getEmail())) {
-                throw new EmailDuplicadoException("Este email ya está en uso");
-            }
-            user.setEmail(userDetails.getEmail());
-        }
-
-        if (userDetails.getPassword() != null && !userDetails.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
-        }
-
-        if (userDetails.getRole() != null) {
-            user.setRole(userDetails.getRole());
-        }
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
 
         return userRepository.save(user);
     }
@@ -201,5 +183,15 @@ public class UserService {
         userRepository.save(user);
         System.out.println("✅ Contraseña actualizada para: " + user.getEmail());
     }
+
+    @Transactional(readOnly = true)
+    public UserDTO getUserByLoginName(String loginName) {
+
+        User user = userRepository.findByUsername(loginName)
+                .orElseGet(() -> userRepository.findByEmailIgnoreCase(loginName)
+                        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado")));
+
+        return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
+}
 
 }
