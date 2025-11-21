@@ -36,6 +36,7 @@ public class Equipment {
 
     private String description;
 
+    @Column(name = "image_url")
     private String imageUrl;
 
     @ManyToOne

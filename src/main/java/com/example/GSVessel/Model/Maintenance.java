@@ -42,6 +42,6 @@ public class Maintenance {
     private String taller;
 
 
-
+    @Column(name = "image_url")
     private String imageUrl;
 }

@@ -15,14 +15,14 @@ public class EquipmentDTO {
     private Double budget;
     private String description;
     private Long shipId;
-    MultipartFile image;
-
+    private String imageUrl;
+    private MultipartFile image;
 
     public EquipmentDTO() {
     }
 
     public EquipmentDTO(Long id, String name, EquipmentCategory category, EquipmentLocation location,
-                        Double consumption, int hoursUsed, Double budget, String description, Long shipId, MultipartFile image) {
+                        Double consumption, int hoursUsed, Double budget, String description, Long shipId, String imageUrl) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -32,8 +32,7 @@ public class EquipmentDTO {
         this.budget = budget;
         this.description = description;
         this.shipId = shipId;
-        this.image = image;
-
+        this.imageUrl = imageUrl;
     }
 
     // Getters y setters
@@ -107,6 +106,14 @@ public class EquipmentDTO {
 
     public void setShipId(Long shipId) {
         this.shipId = shipId;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public MultipartFile getImage() {

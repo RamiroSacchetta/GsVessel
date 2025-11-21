@@ -47,7 +47,7 @@ public class EquipmentService {
         }
     }
 
-    // Convertir entidad a DTO (sin imagen, solo URL)
+
     public EquipmentDTO convertToDTO(Equipment equipment) {
         Long shipId = equipment.getShip() != null ? equipment.getShip().getId() : null;
         return new EquipmentDTO(
@@ -60,11 +60,10 @@ public class EquipmentService {
                 equipment.getBudget(),
                 equipment.getDescription(),
                 shipId,
-                null // No incluimos MultipartFile en el DTO de salida
+                equipment.getImageUrl() // <-- ESTE CAMPO FALTABA
         );
     }
 
-    // Guardar nuevo equipo (usando el image del DTO)
     public EquipmentDTO saveEquipment(EquipmentDTO equipmentDTO) {
         Equipment equipment = new Equipment();
         equipment.setName(equipmentDTO.getName());
@@ -75,14 +74,12 @@ public class EquipmentService {
         equipment.setBudget(equipmentDTO.getBudget());
         equipment.setDescription(equipmentDTO.getDescription());
 
-        // Subir imagen si está presente en el DTO
         MultipartFile image = equipmentDTO.getImage();
         if (image != null && !image.isEmpty()) {
             String imageUrl = uploadImage(image);
             equipment.setImageUrl(imageUrl);
         }
 
-        // Asociar barco si se proporciona
         if (equipmentDTO.getShipId() != null) {
             Ship ship = shipRepository.findById(equipmentDTO.getShipId())
                     .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + equipmentDTO.getShipId()));
@@ -93,7 +90,6 @@ public class EquipmentService {
         return convertToDTO(saved);
     }
 
-    // Actualizar equipo (con posible nueva imagen)
     public EquipmentDTO updateEquipment(Long id, EquipmentDTO equipmentDTO) {
         Equipment equipment = equipmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + id));
@@ -106,13 +102,11 @@ public class EquipmentService {
         equipment.setBudget(equipmentDTO.getBudget());
         equipment.setDescription(equipmentDTO.getDescription());
 
-        // Si se envía una nueva imagen, reemplazar la URL
         MultipartFile newImage = equipmentDTO.getImage();
         if (newImage != null && !newImage.isEmpty()) {
             String newImageUrl = uploadImage(newImage);
             equipment.setImageUrl(newImageUrl);
         }
-        // Si no hay imagen nueva, mantenemos la URL actual (no la borramos)
 
         // Actualizar barco si cambia
         if (equipmentDTO.getShipId() != null) {
@@ -120,7 +114,6 @@ public class EquipmentService {
                     .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + equipmentDTO.getShipId()));
             equipment.setShip(ship);
         } else {
-            // Opcional: si shipId es null, ¿desvincular el equipo del barco?
             // equipment.setShip(null);
         }
 
@@ -150,7 +143,6 @@ public class EquipmentService {
     public void deleteEquipment(Long id) {
         Equipment equipment = equipmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + id));
-        // Opcional: eliminar imagen de Cloudinary (requiere public_id, no lo tenemos)
         equipmentRepository.delete(equipment);
     }
 

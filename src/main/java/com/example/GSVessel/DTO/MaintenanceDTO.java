@@ -15,8 +15,8 @@ public class MaintenanceDTO {
     private MultipartFile image;      // Solo usado en entrada (subida)
     private String imageUrl;          // Solo usado en salida (URL de Cloudinary)
     private Long equipmentId;
-    private String equipmentName; // Nuevo campo para el nombre del equipo
-    private String taller; // Nuevo campo taller
+    private String equipmentName;     // Nuevo campo para el nombre del equipo
+    private String taller;            // Nuevo campo taller
 
     // Constructor privado
     private MaintenanceDTO() {}
@@ -30,12 +30,12 @@ public class MaintenanceDTO {
     public MultipartFile getImage() { return image; }
     public String getImageUrl() { return imageUrl; }
     public Long getEquipmentId() { return equipmentId; }
-    public String getEquipmentName() { return equipmentName; } // Nuevo getter
-    public String getTaller() { return taller; } // Nuevo getter
+    public String getEquipmentName() { return equipmentName; }
+    public String getTaller() { return taller; }
 
     // Setters (necesarios para asignar desde el service)
-    public void setEquipmentName(String equipmentName) { this.equipmentName = equipmentName; } // Nuevo setter
-    public void setTaller(String taller) { this.taller = taller; } // Nuevo setter (aunque no lo uses ahora, es buena práctica tenerlo)
+    public void setEquipmentName(String equipmentName) { this.equipmentName = equipmentName; }
+    public void setTaller(String taller) { this.taller = taller; }
 
     // Builder estático
     public static MaintenanceDTOBuilder builder() {
@@ -52,7 +52,7 @@ public class MaintenanceDTO {
         private String imageUrl;
         private Long equipmentId;
         private String equipmentName; // Nuevo campo en el builder
-        private String taller; // Nuevo campo en el builder
+        private String taller;        // Nuevo campo en el builder
 
         public MaintenanceDTOBuilder id(Long id) {
             this.id = id;
@@ -115,7 +115,7 @@ public class MaintenanceDTO {
             dto.imageUrl = this.imageUrl;
             dto.equipmentId = this.equipmentId;
             dto.equipmentName = this.equipmentName;
-            dto.taller = this.taller; // Nuevo campo
+            dto.taller = this.taller;
             return dto;
         }
     }
