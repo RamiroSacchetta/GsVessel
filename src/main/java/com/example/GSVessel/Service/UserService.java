@@ -1,5 +1,6 @@
 package com.example.GSVessel.Service;
 
+import com.example.GSVessel.DTO.UserDTO;
 import com.example.GSVessel.Exception.UsernameDuplicate;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Model.VerificationToken;
@@ -201,5 +202,15 @@ public class UserService {
         userRepository.save(user);
         System.out.println("✅ Contraseña actualizada para: " + user.getEmail());
     }
+
+
+    @Transactional(readOnly = true)
+    public UserDTO getUserByLoginName(String loginName) {
+
+        User user = userRepository.findByUsername(loginName)
+                .orElseGet(() -> userRepository.findByEmailIgnoreCase(loginName)
+                        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado")));
+
+        return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole());}
 
 }

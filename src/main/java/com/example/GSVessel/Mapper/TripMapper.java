@@ -16,18 +16,7 @@ public class TripMapper {
                 .returnDate(trip.getReturnDate())
                 .otherExpenses(trip.getOtherExpenses())
                 .shipId(trip.getShip() != null ? trip.getShip().getId() : null)
-                // Los demás campos del DTO no existen en la entidad, quedan nulos/default
-                .foodExpense(null)
-                .shacklesExpense(null)
-                .cablesExpense(null)
-                .combustible(null)
-                .aceite(null)
-                .filtros(null)
-                .combustibleUsed(0)
-                .aceiteUsed(0)
-                .filtrosUsed(0)
-                .shacklesUsed(0)
-                .cargoUsed(0)
+
                 .build();
     }
 

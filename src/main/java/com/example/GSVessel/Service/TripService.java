@@ -6,6 +6,7 @@ import com.example.GSVessel.Exception.ListNoContentException;
 import com.example.GSVessel.Model.StockItem;
 import com.example.GSVessel.Model.Trip;
 import com.example.GSVessel.Model.TripStockItem;
+import com.example.GSVessel.Repository.ShipRepository;
 import com.example.GSVessel.Repository.StockItemRepository;
 import com.example.GSVessel.Repository.TripRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class TripService {
 
     private final TripRepository tripRepository;
     private final StockItemRepository stockItemRepository;
+    private final ShipRepository shipRepository;
 
     // Crear viaje y actualizar stock
     @Transactional
@@ -87,5 +89,14 @@ public class TripService {
 
         existingTrip.setReturnDate(returnDate);
         return tripRepository.save(existingTrip);
+    }
+
+    public List<Trip> findByShipId(Long shipId) {
+        if(shipRepository.findById(shipId).isPresent()) {
+            return tripRepository.findAll();
+        }
+        else {
+            return null;
+        }
     }
 }
