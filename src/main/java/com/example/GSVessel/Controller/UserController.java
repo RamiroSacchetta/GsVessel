@@ -1,5 +1,6 @@
 package com.example.GSVessel.Controller;
 
+import com.example.GSVessel.Model.Enums.Role;
 import com.example.GSVessel.Model.User;
 import com.example.GSVessel.DTO.RegisterUserDTO;
 import com.example.GSVessel.DTO.UserDTO;
@@ -104,6 +105,48 @@ public class UserController {
         String loginName = authentication.getName();
         return ResponseEntity.ok(userService.getUserByLoginName(loginName));
 
+    }
+
+    @PostMapping("/registerEmployee")
+    public ResponseEntity<UserDTO> registerEmployee(
+            Authentication auth,
+            @Valid @RequestBody RegisterUserDTO dto
+    ) {
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // usuario logueado (owner/admin) —
+        User creator = userService.findEntityByLoginName(auth.getName());
+
+        User created = userService.registerEmployeeForOwner(dto, creator);
+
+        // mapear a DTO explícito para evitar ciclos y exponer solo lo necesario
+        UserDTO response = new UserDTO(created.getId(), created.getUsername(), created.getEmail(), created.getRole());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+
+    @GetMapping("/empleados")
+    public ResponseEntity<List<UserDTO>> getEmpleadosDelOwner(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String caller = authentication.getName();
+        User callerUser = userService.findEntityByLoginName(caller); // ya lo tenés en el service
+
+        // Sólo permití OWNER o ADMIN (si querés)
+        if (!(callerUser.getRole() == Role.OWNER || callerUser.getRole() == Role.ADMIN)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<UserDTO> empleados = userService.getEmployeesByOwnerId(callerUser.getId());
+        if (empleados.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(empleados);
     }
 
 }

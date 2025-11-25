@@ -1,5 +1,6 @@
 package com.example.GSVessel.Service;
 
+import com.example.GSVessel.DTO.RegisterUserDTO;
 import com.example.GSVessel.DTO.UserDTO;
 import com.example.GSVessel.Exception.UsernameDuplicate;
 import com.example.GSVessel.Model.User;
@@ -19,9 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +54,7 @@ public class UserService {
             throw new EmailDuplicadoException("Este email ya está en uso");
         }
 
-        user.setRole(user.getRole() != null ? user.getRole() : Role.USER);
+        user.setRole(user.getRole() != null ? user.getRole() : Role.OWNER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setEnabled(false);
 
@@ -212,5 +215,43 @@ public class UserService {
                         .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado")));
 
         return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole());}
+
+
+    @Transactional(readOnly = true)
+    public User findEntityByLoginName(String loginName) {
+
+        return userRepository.findByUsername(loginName)
+                .orElseGet(() -> userRepository.findByEmailIgnoreCase(loginName)
+                        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado")));
+    }
+
+    public User registerEmployeeForOwner(RegisterUserDTO dto, User owner) {
+        if (existsByUsername(dto.username())) throw new UsernameDuplicate("username", dto.username());
+        if (existsByEmail(dto.email())) throw new EmailDuplicadoException("Este email ya está en uso");
+
+        User employee = new User();
+        employee.setUsername(dto.username());
+        employee.setEmail(dto.email());
+        employee.setPassword(passwordEncoder.encode(dto.password()));
+        employee.setRole(Role.EMPLEADO);
+        employee.setEnabled(true);
+
+        // vínculo con owner (si tenés campo owner en User)
+        employee.setOwner(owner);
+
+        return userRepository.save(employee);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserDTO> getEmployeesByOwnerId(Long ownerId) {
+        // trae sólo los usuarios con role EMPLEADO vinculados al owner
+        List<User> employees = userRepository.findByOwnerIdAndRole(ownerId, Role.EMPLEADO);
+
+        // mapear a DTO para evitar recursiones y exponer sólo lo necesario
+        return employees.stream()
+                .map(u -> new UserDTO(u.getId(), u.getUsername(), u.getEmail(), u.getRole()))
+                .collect(Collectors.toList());
+    }
+
 
 }

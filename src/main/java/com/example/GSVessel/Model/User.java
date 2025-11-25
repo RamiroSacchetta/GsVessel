@@ -50,6 +50,17 @@ public class User {
     @JsonManagedReference
     private List<Barco> barcos;
 
+    //campo para vincular a owner
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    @JsonIgnore
+    private User owner;
+
+    @OneToMany(mappedBy = "owner")
+    @JsonIgnore
+    private List<User> employees;
+
+
 
     @Column(nullable = false)
     private boolean enabled = false;

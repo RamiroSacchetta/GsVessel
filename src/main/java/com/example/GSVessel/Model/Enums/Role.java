@@ -9,6 +9,7 @@ import java.util.List;
 public enum Role {
     USER,
     EMPLEADO,
+    OWNER,
     ADMIN;
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
