@@ -22,10 +22,12 @@ public class TripController {
         return tripService.findAll();
     }
 
-    @GetMapping("/{id}")
+   /* @GetMapping("/{id}")
     public Trip getById(@PathVariable Long id) {
         return tripService.findById(id);
     }
+
+    */
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> create(@RequestBody Trip trip) {
@@ -45,5 +47,14 @@ public class TripController {
         LocalDate returnDate = LocalDate.parse(body.get("returnDate"));
         Trip updatedTrip = tripService.updateReturnDate(id, returnDate);
         return ResponseEntity.ok(updatedTrip);
+    }
+
+    @GetMapping("/{shipId}")
+    public ResponseEntity<List<Trip>> getByShipId(@PathVariable Long shipId) {
+        List<Trip> trips = tripService.findByShipId(shipId);
+        if (trips == null || trips.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(trips);
     }
 }

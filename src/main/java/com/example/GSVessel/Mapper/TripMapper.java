@@ -16,6 +16,7 @@ public class TripMapper {
                 .returnDate(trip.getReturnDate())
                 .otherExpenses(trip.getOtherExpenses())
                 .shipId(trip.getShip() != null ? trip.getShip().getId() : null)
+
                 .build();
     }
 

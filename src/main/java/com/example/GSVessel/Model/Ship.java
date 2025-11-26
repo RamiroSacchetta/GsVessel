@@ -2,6 +2,7 @@ package com.example.GSVessel.Model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class Ship {
 
     @OneToMany(mappedBy = "ship", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
+    @JsonManagedReference
     private List<Trip> trips;
 
     // Getters y Setters manuales

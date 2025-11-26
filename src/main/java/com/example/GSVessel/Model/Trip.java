@@ -1,6 +1,7 @@
 package com.example.GSVessel.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,7 @@ public class Trip {
 
     @ManyToOne
     @JoinColumn(name = "ship_id", nullable = false)
+    @JsonBackReference
     private Ship ship;
 
     // Relación con los items usados del stock

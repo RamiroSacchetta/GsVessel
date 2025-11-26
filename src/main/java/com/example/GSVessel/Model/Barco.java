@@ -39,7 +39,8 @@ public class Barco {
     @JsonBackReference
     private User owner;
 
-    @OneToMany(mappedBy = "barco", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "barco", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Ship> ships;
+
 }
