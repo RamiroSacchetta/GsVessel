@@ -111,4 +111,13 @@ public class EquipmentController {
         List<EquipmentDTO> equipments = equipmentService.getEquipmentByCategory(category);
         return ResponseEntity.ok(equipments);
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<EquipmentDTO> getEquipmentById(@PathVariable Long id) {
+        EquipmentDTO equipment = equipmentService.getEquipmentById(id);
+        if (equipment == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(equipment);
+    }
+
 }
