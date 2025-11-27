@@ -125,12 +125,24 @@ public class UserService {
         userRepository.delete(user);
     }
 
+
+
     public boolean existsByUsername(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
 
     public boolean existsByEmail(String email) {
         return userRepository.findByEmailIgnoreCase(email).isPresent();
+    }
+
+    @Transactional
+    public void deleteByEmail(String email) {
+        if (existsByEmail(email)) {
+            userRepository.deleteByEmailIgnoreCase(email);
+        }
+        else {
+            System.out.println("Email no encontrado");
+        }
     }
 
     private void sendConfirmationEmail(String to, String token) {

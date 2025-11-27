@@ -77,10 +77,17 @@ public class UserController {
         return ResponseEntity.ok(dto);
     }
 
-    // Eliminar usuario
+    // Eliminar usuario por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    //eliminar por mail
+    @DeleteMapping ("/delete/{email}")
+    public ResponseEntity<Void> deleteUserByEmail(@PathVariable String email) {
+        userService.deleteByEmail(email);
         return ResponseEntity.noContent().build();
     }
 

@@ -14,6 +14,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmailIgnoreCase(String email);
     Optional<User> findByResetPasswordToken(String token);
 
+    void deleteByEmailIgnoreCase(String email);
+
     // consulta para traer empleados por owner id
     @Query("select u from User u where u.owner.id = :ownerId and u.role = :role")
     List<User> findByOwnerIdAndRole(@Param("ownerId") Long ownerId, @Param("role") Role role);
