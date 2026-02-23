@@ -1,7 +1,6 @@
 package com.example.GSVessel.Service;
 
 import com.example.GSVessel.DTO.ShipDTO;
-import com.example.GSVessel.Exception.BusinessException;
 import com.example.GSVessel.Exception.EntityNotFoundException;
 import com.example.GSVessel.Exception.ListNoContentException;
 import com.example.GSVessel.Model.Barco;
@@ -10,7 +9,9 @@ import com.example.GSVessel.Model.User;
 import com.example.GSVessel.Repository.BarcoRepository;
 import com.example.GSVessel.Repository.ShipRepository;
 import com.example.GSVessel.Repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -29,28 +30,46 @@ public class ShipService {
         this.userRepository = userRepository;
     }
 
-    // Listar todos los ships
-    public List<Ship> getAllShips() {
-        List<Ship> ships = shipRepository.findAll();
+    private User getCurrentUserByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+    }
+
+    private User getScopeOwner(User currentUser) {
+        return currentUser.getOwner() != null ? currentUser.getOwner() : currentUser;
+    }
+
+    public List<Ship> getAllShips(String email) {
+        User current = getCurrentUserByEmail(email);
+        User scopeOwner = getScopeOwner(current);
+
+        List<Ship> ships = shipRepository.findAllByBarcoOwner(scopeOwner);
         if (ships.isEmpty()) {
             throw new ListNoContentException("No se encontraron ships");
         }
         return ships;
     }
 
-    // Obtener ship por id
-    public Ship getShipById(Long id) {
-        return shipRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Ship no encontrado con id: " + id));
+    public Ship getShipById(Long id, String email) {
+        User current = getCurrentUserByEmail(email);
+        User scopeOwner = getScopeOwner(current);
+
+        return shipRepository.findByIdAndBarcoOwner(id, scopeOwner)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.FORBIDDEN, "No tienes permiso para ver este ship"));
     }
 
-    // Crear ship y asignarlo a un barco existente por nombre
+    // Mejor opción: crear por barcoId (no por nombre)
     public Ship createShip(ShipDTO shipDTO, String userEmail) {
-        User user = userRepository.findByEmailIgnoreCase(userEmail)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+        User current = getCurrentUserByEmail(userEmail);
+        User scopeOwner = getScopeOwner(current);
 
-        Barco barco = barcoRepository.findByOwnerAndNombre(user, shipDTO.getBarcoNombre())
-                .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con ese nombre"));
+        if (shipDTO.getBarcoId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "barcoId es obligatorio");
+        }
+
+        Barco barco = barcoRepository.findByIdAndOwner(shipDTO.getBarcoId(), scopeOwner)
+                .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado o no pertenece al usuario"));
 
         Ship ship = new Ship();
         ship.setName(shipDTO.getName());
@@ -62,25 +81,37 @@ public class ShipService {
         return shipRepository.save(ship);
     }
 
-    // Actualizar ship
-    public Ship updateShip(Long id, Ship shipDetails) {
-        Ship existing = shipRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Ship no encontrado con id: " + id));
+    public Ship updateShip(Long id, Ship shipDetails, String email) {
+        User current = getCurrentUserByEmail(email);
+        User scopeOwner = getScopeOwner(current);
+
+        Ship existing = shipRepository.findByIdAndBarcoOwner(id, scopeOwner)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.FORBIDDEN, "No tienes permiso para editar este ship"));
 
         if (shipDetails.getName() != null) existing.setName(shipDetails.getName());
         if (shipDetails.getRegistration() != null) existing.setRegistration(shipDetails.getRegistration());
         existing.setActive(shipDetails.isActive());
         existing.setCrewSize(shipDetails.getCrewSize());
 
-        if (shipDetails.getBarco() != null) existing.setBarco(shipDetails.getBarco());
+        if (shipDetails.getBarco() != null && shipDetails.getBarco().getId() != null) {
+            Barco newBarco = barcoRepository.findByIdAndOwner(shipDetails.getBarco().getId(), scopeOwner)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.FORBIDDEN, "No puedes asignar este ship a un barco de otro usuario"));
+            existing.setBarco(newBarco);
+        }
 
         return shipRepository.save(existing);
     }
 
-    // Eliminar ship
-    public void deleteShip(Long id) {
-        Ship existing = shipRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Ship no encontrado con id: " + id));
+    public void deleteShip(Long id, String email) {
+        User current = getCurrentUserByEmail(email);
+        User scopeOwner = getScopeOwner(current);
+
+        Ship existing = shipRepository.findByIdAndBarcoOwner(id, scopeOwner)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.FORBIDDEN, "No tienes permiso para eliminar este ship"));
+
         shipRepository.delete(existing);
     }
 }

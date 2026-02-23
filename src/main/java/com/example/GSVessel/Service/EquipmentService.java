@@ -34,7 +34,6 @@ public class EquipmentService {
         this.cloudinary = cloudinary;
     }
 
-    // Método auxiliar para subir imagen a Cloudinary
     private String uploadImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
             return null;
@@ -47,10 +46,10 @@ public class EquipmentService {
         }
     }
 
-
     public EquipmentDTO convertToDTO(Equipment equipment) {
         Long shipId = equipment.getShip() != null ? equipment.getShip().getId() : null;
-        return new EquipmentDTO(
+        Long parentId = equipment.getParent() != null ? equipment.getParent().getId() : null;
+        EquipmentDTO dto = new EquipmentDTO(
                 equipment.getId(),
                 equipment.getName(),
                 equipment.getCategory(),
@@ -60,107 +59,128 @@ public class EquipmentService {
                 equipment.getBudget(),
                 equipment.getDescription(),
                 shipId,
-                equipment.getImageUrl() // <-- ESTE CAMPO FALTABA
+                equipment.getImageUrl()
         );
+        dto.setParentId(parentId);
+        return dto;
     }
 
-    public EquipmentDTO saveEquipment(EquipmentDTO equipmentDTO) {
+    public EquipmentDTO saveEquipment(EquipmentDTO dto) {
         Equipment equipment = new Equipment();
-        equipment.setName(equipmentDTO.getName());
-        equipment.setCategory(equipmentDTO.getCategory());
-        equipment.setLocation(equipmentDTO.getLocation());
-        equipment.setConsumption(equipmentDTO.getConsumption());
-        equipment.setHoursUsed(equipmentDTO.getHoursUsed());
-        equipment.setBudget(equipmentDTO.getBudget());
-        equipment.setDescription(equipmentDTO.getDescription());
+        equipment.setName(dto.getName());
+        equipment.setCategory(dto.getCategory());
+        equipment.setLocation(dto.getLocation());
+        equipment.setConsumption(dto.getConsumption());
+        equipment.setHoursUsed(dto.getHoursUsed());
+        equipment.setBudget(dto.getBudget());
+        equipment.setDescription(dto.getDescription());
 
-        MultipartFile image = equipmentDTO.getImage();
-        if (image != null && !image.isEmpty()) {
-            String imageUrl = uploadImage(image);
-            equipment.setImageUrl(imageUrl);
+        if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+            equipment.setImageUrl(uploadImage(dto.getImage()));
         }
 
-        if (equipmentDTO.getShipId() != null) {
-            Ship ship = shipRepository.findById(equipmentDTO.getShipId())
-                    .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + equipmentDTO.getShipId()));
+        if (dto.getShipId() != null) {
+            Ship ship = shipRepository.findById(dto.getShipId())
+                    .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + dto.getShipId()));
             equipment.setShip(ship);
+        }
+
+        // Asignar padre y sincronizar horas si aplica
+        if (dto.getParentId() != null) {
+            Equipment parent = equipmentRepository.findById(dto.getParentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Equipo padre no encontrado con id: " + dto.getParentId()));
+            equipment.setParent(parent);
+            // Sincronizar horas del nuevo componente con el padre
+            equipment.setHoursUsed(parent.getHoursUsed());
         }
 
         Equipment saved = equipmentRepository.save(equipment);
         return convertToDTO(saved);
     }
 
-    public EquipmentDTO updateEquipment(Long id, EquipmentDTO equipmentDTO) {
+    public EquipmentDTO updateEquipment(Long id, EquipmentDTO dto) {
         Equipment equipment = equipmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + id));
 
-        equipment.setName(equipmentDTO.getName());
-        equipment.setCategory(equipmentDTO.getCategory());
-        equipment.setLocation(equipmentDTO.getLocation());
-        equipment.setConsumption(equipmentDTO.getConsumption());
-        equipment.setHoursUsed(equipmentDTO.getHoursUsed());
-        equipment.setBudget(equipmentDTO.getBudget());
-        equipment.setDescription(equipmentDTO.getDescription());
+        equipment.setName(dto.getName());
+        equipment.setCategory(dto.getCategory());
+        equipment.setLocation(dto.getLocation());
+        equipment.setConsumption(dto.getConsumption());
+        equipment.setHoursUsed(dto.getHoursUsed());
+        equipment.setBudget(dto.getBudget());
+        equipment.setDescription(dto.getDescription());
 
-        MultipartFile newImage = equipmentDTO.getImage();
-        if (newImage != null && !newImage.isEmpty()) {
-            String newImageUrl = uploadImage(newImage);
-            equipment.setImageUrl(newImageUrl);
+        if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+            equipment.setImageUrl(uploadImage(dto.getImage()));
         }
 
-        // Actualizar barco si cambia
-        if (equipmentDTO.getShipId() != null) {
-            Ship ship = shipRepository.findById(equipmentDTO.getShipId())
-                    .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + equipmentDTO.getShipId()));
+        if (dto.getShipId() != null) {
+            Ship ship = shipRepository.findById(dto.getShipId())
+                    .orElseThrow(() -> new EntityNotFoundException("Barco no encontrado con id: " + dto.getShipId()));
             equipment.setShip(ship);
+        }
+
+        // Actualizar padre (o desvincular)
+        if (dto.getParentId() != null) {
+            Equipment parent = equipmentRepository.findById(dto.getParentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Equipo padre no encontrado con id: " + dto.getParentId()));
+            equipment.setParent(parent);
         } else {
-            // equipment.setShip(null);
+            equipment.setParent(null);
         }
 
         Equipment updated = equipmentRepository.save(equipment);
         return convertToDTO(updated);
     }
 
-    // Listar todos los equipos
+    public EquipmentDTO getEquipmentById(Long id) {
+        Equipment equipment = equipmentRepository.findWithHierarchyById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + id));
+        return convertToDTO(equipment);
+    }
+
     public List<EquipmentDTO> getAllEquipment() {
-        List<Equipment> equipments = equipmentRepository.findAll();
+        List<Equipment> list = equipmentRepository.findAll();
+        if (list.isEmpty()) throw new ListNoContentException("No se encontraron equipos");
+        return list.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    public List<EquipmentDTO> getEquipmentByShip(Long shipId) {
+        List<Equipment> list = equipmentRepository.findByShipId(shipId);
+        if (list.isEmpty()) throw new ListNoContentException("No hay equipos para el barco con id: " + shipId);
+        return list.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    public List<EquipmentDTO> getEquipmentTreeByShip(Long shipId) {
+        List<Equipment> roots = equipmentRepository.findByShipIdAndParentIsNull(shipId);
+        if (roots.isEmpty()) throw new ListNoContentException("No hay equipos raíz para el barco con id: " + shipId);
+        return roots.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    //  Filtrar por categoría
+    public List<EquipmentDTO> getEquipmentByCategory(EquipmentCategory category) {
+        List<Equipment> equipments = equipmentRepository.findByCategory(category);
         if (equipments.isEmpty()) {
-            throw new ListNoContentException("No se encontraron equipos");
+            throw new ListNoContentException("No se encontraron equipos para la categoría: " + category);
         }
         return equipments.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Obtener equipo por ID
-    public EquipmentDTO getEquipmentById(Long id) {
-        Equipment equipment = equipmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + id));
-        return convertToDTO(equipment);
-    }
-
-    // Eliminar equipo
     public void deleteEquipment(Long id) {
-        Equipment equipment = equipmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + id));
-        equipmentRepository.delete(equipment);
+        if (!equipmentRepository.existsById(id)) {
+            throw new EntityNotFoundException("Equipo no encontrado con id: " + id);
+        }
+        equipmentRepository.deleteById(id);
     }
 
-    // Filtrar por barco
-    public List<EquipmentDTO> getEquipmentByShip(Long shipId) {
-        List<Equipment> equipments = equipmentRepository.findByShipId(shipId);
-        if (equipments.isEmpty()) {
-            throw new ListNoContentException("No se encontraron equipos para el barco con id: " + shipId);
-        }
-        return equipments.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    // Filtrar por categoría
-    public List<EquipmentDTO> getEquipmentByCategory(EquipmentCategory category) {
-        List<Equipment> equipments = equipmentRepository.findByCategory(category);
-        if (equipments.isEmpty()) {
-            throw new ListNoContentException("No se encontraron equipos para la categoría: " + category);
-        }
-        return equipments.stream().map(this::convertToDTO).collect(Collectors.toList());
+    // Reiniciar horas de un equipo específico (ej. tras reemplazo)
+    public EquipmentDTO resetHours(Long equipmentId) {
+        Equipment equipment = equipmentRepository.findById(equipmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado con id: " + equipmentId));
+        equipment.setHoursUsed(0);
+        Equipment saved = equipmentRepository.save(equipment);
+        return convertToDTO(saved);
     }
 }

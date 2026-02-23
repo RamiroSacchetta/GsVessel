@@ -8,9 +8,19 @@ public class MaintenanceMapper {
     public static MaintenanceDTO toDTO(Maintenance maintenance) {
         if (maintenance == null) return null;
 
+        Long equipmentId = null;
         String equipmentName = null;
+        Long shipId = null;
+        String shipName = null;
+
         if (maintenance.getEquipment() != null) {
+            equipmentId = maintenance.getEquipment().getId();
             equipmentName = maintenance.getEquipment().getName();
+
+            if (maintenance.getEquipment().getShip() != null) {
+                shipId = maintenance.getEquipment().getShip().getId();
+                shipName = maintenance.getEquipment().getShip().getName();
+            }
         }
 
         return MaintenanceDTO.builder()
@@ -21,7 +31,10 @@ public class MaintenanceMapper {
                 .taller(maintenance.getTaller())
                 .tipoMaintenance(maintenance.getTipoMaintenance())
                 .imageUrl(maintenance.getImageUrl())
+                .equipmentId(equipmentId)
                 .equipmentName(equipmentName)
+                .shipId(shipId)
+                .shipName(shipName)
                 .build();
     }
 }

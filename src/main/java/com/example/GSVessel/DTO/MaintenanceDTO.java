@@ -15,13 +15,13 @@ public class MaintenanceDTO {
     private MultipartFile image;      // Solo usado en entrada (subida)
     private String imageUrl;          // Solo usado en salida (URL de Cloudinary)
     private Long equipmentId;
-    private String equipmentName;     // Nuevo campo para el nombre del equipo
-    private String taller;            // Nuevo campo taller
+    private String equipmentName;
+    private Long shipId;
+    private String shipName;
+    private String taller;
 
-    // Constructor privado
     private MaintenanceDTO() {}
 
-    // Getters
     public Long getId() { return id; }
     public LocalDate getFecha() { return fecha; }
     public BigDecimal getCosto() { return costo; }
@@ -31,13 +31,15 @@ public class MaintenanceDTO {
     public String getImageUrl() { return imageUrl; }
     public Long getEquipmentId() { return equipmentId; }
     public String getEquipmentName() { return equipmentName; }
+    public Long getShipId() { return shipId; }
+    public String getShipName() { return shipName; }
     public String getTaller() { return taller; }
 
-    // Setters (necesarios para asignar desde el service)
     public void setEquipmentName(String equipmentName) { this.equipmentName = equipmentName; }
+    public void setShipId(Long shipId) { this.shipId = shipId; }
+    public void setShipName(String shipName) { this.shipName = shipName; }
     public void setTaller(String taller) { this.taller = taller; }
 
-    // Builder estático
     public static MaintenanceDTOBuilder builder() {
         return new MaintenanceDTOBuilder();
     }
@@ -51,8 +53,10 @@ public class MaintenanceDTO {
         private MultipartFile image;
         private String imageUrl;
         private Long equipmentId;
-        private String equipmentName; // Nuevo campo en el builder
-        private String taller;        // Nuevo campo en el builder
+        private String equipmentName;
+        private Long shipId;
+        private String shipName;
+        private String taller;
 
         public MaintenanceDTOBuilder id(Long id) {
             this.id = id;
@@ -99,6 +103,16 @@ public class MaintenanceDTO {
             return this;
         }
 
+        public MaintenanceDTOBuilder shipId(Long shipId) {
+            this.shipId = shipId;
+            return this;
+        }
+
+        public MaintenanceDTOBuilder shipName(String shipName) {
+            this.shipName = shipName;
+            return this;
+        }
+
         public MaintenanceDTOBuilder taller(String taller) {
             this.taller = taller;
             return this;
@@ -115,6 +129,8 @@ public class MaintenanceDTO {
             dto.imageUrl = this.imageUrl;
             dto.equipmentId = this.equipmentId;
             dto.equipmentName = this.equipmentName;
+            dto.shipId = this.shipId;
+            dto.shipName = this.shipName;
             dto.taller = this.taller;
             return dto;
         }

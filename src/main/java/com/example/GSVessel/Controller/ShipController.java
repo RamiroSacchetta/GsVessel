@@ -4,9 +4,9 @@ import com.example.GSVessel.DTO.ShipDTO;
 import com.example.GSVessel.Model.Ship;
 import com.example.GSVessel.Service.ShipService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -19,38 +19,40 @@ public class ShipController {
         this.shipService = shipService;
     }
 
-    // Listar todos los ships
+    // Listar ships del usuario autenticado (owner scope)
     @GetMapping
-    public List<Ship> getAllShips() {
-        return shipService.getAllShips();
+    public List<Ship> getAllShips(Authentication authentication) {
+        String email = authentication.getName();
+        return shipService.getAllShips(email);
     }
 
-    // Obtener ship por id
+    // Obtener ship por id solo si pertenece al usuario autenticado
     @GetMapping("/{id}")
-    public ResponseEntity<Ship> getShipById(@PathVariable Long id) {
-        Ship ship = shipService.getShipById(id);
+    public ResponseEntity<Ship> getShipById(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        Ship ship = shipService.getShipById(id, email);
         return ResponseEntity.ok(ship);
     }
 
-    // Crear ship enviando barcoNombre y userEmail como parámetros
+    // Crear ship asociado a un barco del usuario autenticado
     @PostMapping
-    public Ship createShip(@RequestBody ShipDTO shipDTO,
-                           @AuthenticationPrincipal UserDetails userDetails) {
-        String userEmail = userDetails.getUsername();
+    public Ship createShip(@RequestBody ShipDTO shipDTO, Authentication authentication) {
+        String userEmail = authentication.getName();
         return shipService.createShip(shipDTO, userEmail);
     }
 
-
-    // Actualizar ship
+    // Actualizar ship solo si pertenece al usuario autenticado
     @PutMapping("/{id}")
-    public Ship updateShip(@PathVariable Long id, @RequestBody Ship ship) {
-        return shipService.updateShip(id, ship);
+    public Ship updateShip(@PathVariable Long id, @RequestBody Ship ship, Authentication authentication) {
+        String email = authentication.getName();
+        return shipService.updateShip(id, ship, email);
     }
 
-    // Eliminar ship
+    // Eliminar ship solo si pertenece al usuario autenticado
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteShip(@PathVariable Long id) {
-        shipService.deleteShip(id);
+    public ResponseEntity<Void> deleteShip(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        shipService.deleteShip(id, email);
         return ResponseEntity.noContent().build();
     }
 }

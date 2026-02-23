@@ -12,5 +12,5 @@ public class ShipDTO {
     private String registration;
     private boolean active;
     private int crewSize;
-    private String barcoNombre; // el nombre del barco al que se asocia
+    private Long barcoId; // mejor que nombre: único y estable
 }

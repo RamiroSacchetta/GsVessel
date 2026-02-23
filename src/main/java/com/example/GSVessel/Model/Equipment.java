@@ -30,10 +30,9 @@ public class Equipment {
     private Double consumption;
 
     @Column(nullable = false)
-    private int hoursUsed;
+    private int hoursUsed; // Horas desde última instalación/reemplazo
 
     private Double budget;
-
     private String description;
 
     @Column(name = "image_url")
@@ -42,6 +41,15 @@ public class Equipment {
     @ManyToOne
     @JoinColumn(name = "ship_id")
     private Ship ship;
+
+    // Relación recursiva: padre
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Equipment parent;
+
+    // Relación recursiva: hijos
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Equipment> children = new ArrayList<>();
 
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Maintenance> mantenimientos = new ArrayList<>();
@@ -94,10 +102,15 @@ public class Equipment {
     public Ship getShip() { return ship; }
     public void setShip(Ship ship) { this.ship = ship; }
 
+    public Equipment getParent() { return parent; }
+    public void setParent(Equipment parent) { this.parent = parent; }
+
+    public List<Equipment> getChildren() { return children; }
+    public void setChildren(List<Equipment> children) { this.children = children; }
+
     public List<Maintenance> getMantenimientos() { return mantenimientos; }
     public void setMantenimientos(List<Maintenance> mantenimientos) { this.mantenimientos = mantenimientos; }
 
-    // equals y hashCode
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

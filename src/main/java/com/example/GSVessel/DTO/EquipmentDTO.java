@@ -15,14 +15,15 @@ public class EquipmentDTO {
     private Double budget;
     private String description;
     private Long shipId;
+    private Long parentId; // ← Nuevo: para asignar padre al crear/editar
     private String imageUrl;
     private MultipartFile image;
 
-    public EquipmentDTO() {
-    }
+    public EquipmentDTO() {}
 
     public EquipmentDTO(Long id, String name, EquipmentCategory category, EquipmentLocation location,
-                        Double consumption, int hoursUsed, Double budget, String description, Long shipId, String imageUrl) {
+                        Double consumption, int hoursUsed, Double budget, String description,
+                        Long shipId, String imageUrl) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -35,92 +36,40 @@ public class EquipmentDTO {
         this.imageUrl = imageUrl;
     }
 
-    // Getters y setters
-    public Long getId() {
-        return id;
-    }
+    // Getters y Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public EquipmentCategory getCategory() { return category; }
+    public void setCategory(EquipmentCategory category) { this.category = category; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public EquipmentLocation getLocation() { return location; }
+    public void setLocation(EquipmentLocation location) { this.location = location; }
 
-    public EquipmentCategory getCategory() {
-        return category;
-    }
+    public Double getConsumption() { return consumption; }
+    public void setConsumption(Double consumption) { this.consumption = consumption; }
 
-    public void setCategory(EquipmentCategory category) {
-        this.category = category;
-    }
+    public int getHoursUsed() { return hoursUsed; }
+    public void setHoursUsed(int hoursUsed) { this.hoursUsed = hoursUsed; }
 
-    public EquipmentLocation getLocation() {
-        return location;
-    }
+    public Double getBudget() { return budget; }
+    public void setBudget(Double budget) { this.budget = budget; }
 
-    public void setLocation(EquipmentLocation location) {
-        this.location = location;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public Double getConsumption() {
-        return consumption;
-    }
+    public Long getShipId() { return shipId; }
+    public void setShipId(Long shipId) { this.shipId = shipId; }
 
-    public void setConsumption(Double consumption) {
-        this.consumption = consumption;
-    }
+    public Long getParentId() { return parentId; }
+    public void setParentId(Long parentId) { this.parentId = parentId; }
 
-    public int getHoursUsed() {
-        return hoursUsed;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public void setHoursUsed(int hoursUsed) {
-        this.hoursUsed = hoursUsed;
-    }
-
-    public Double getBudget() {
-        return budget;
-    }
-
-    public void setBudget(Double budget) {
-        this.budget = budget;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Long getShipId() {
-        return shipId;
-    }
-
-    public void setShipId(Long shipId) {
-        this.shipId = shipId;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public MultipartFile getImage() {
-        return image;
-    }
-
-    public void setImage(MultipartFile image) {
-        this.image = image;
-    }
+    public MultipartFile getImage() { return image; }
+    public void setImage(MultipartFile image) { this.image = image; }
 }
